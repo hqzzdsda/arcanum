@@ -3,44 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcanum: Complete Edition</title>
+    <title>Arcanum: The Final Ritual</title>
     <style>
-        /* --- 全局样式 --- */
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Cinzel', 'Noto Serif SC', serif; user-select: none; }
-        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        /* --- 全局样式 (Global Styles) --- */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #000; 
+            font-family: 'Cinzel', 'Noto Serif SC', serif; 
+            user-select: none; 
+        }
+        #canvas-container { 
+            width: 100vw; 
+            height: 100vh; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            z-index: 1; 
+        }
         
+        /* 引入字体 */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Noto+Serif+SC:wght@300;500&display=swap');
 
         /* --- 初始界面 (Start Screen) --- */
         #start-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
             z-index: 100;
             background: radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.95) 90%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
             transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1);
             color: #d4af37;
         }
 
-        /* 标题设计 */
+        /* 标题动画与样式 */
         .title-group { 
-            text-align: center; margin-bottom: 60px; 
+            text-align: center; 
+            margin-bottom: 60px; 
             position: relative;
             animation: floatTitle 6s ease-in-out infinite; 
         }
         
         h1 { 
-            font-size: 72px; margin: 0; letter-spacing: 20px; font-weight: 800;
+            font-size: 72px; 
+            margin: 0; 
+            letter-spacing: 20px; 
+            font-weight: 800;
             background: linear-gradient(135deg, #fff 0%, #d4af37 50%, #996515 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
             position: relative;
         }
         
         h2 { 
-            font-size: 14px; font-weight: 400; letter-spacing: 8px; color: #a0a0a0; 
-            margin-top: 15px; text-transform: uppercase; opacity: 0.8;
+            font-size: 14px; 
+            font-weight: 400; 
+            letter-spacing: 8px; 
+            color: #a0a0a0; 
+            margin-top: 15px; 
+            text-transform: uppercase; 
+            opacity: 0.8;
             border-top: 1px solid rgba(212, 175, 55, 0.3);
-            display: inline-block; padding-top: 15px; width: 120%; margin-left: -10%;
+            display: inline-block; 
+            padding-top: 15px; 
+            width: 120%; 
+            margin-left: -10%;
         }
 
         @keyframes floatTitle {
@@ -48,70 +82,112 @@
             50% { transform: translateY(-10px); }
         }
 
-        /* 选项区域 */
+        /* 选项按钮网格 */
         .options-grid { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 60px; 
-            margin-bottom: 60px; text-align: center; 
-            opacity: 0; animation: fadeUp 1s ease-out 0.5s forwards; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 60px; 
+            margin-bottom: 60px; 
+            text-align: center; 
+            opacity: 0; 
+            animation: fadeUp 1s ease-out 0.5s forwards; 
         }
-        .option-group { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .option-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            align-items: center; 
+        }
         .option-label { 
-            font-size: 11px; letter-spacing: 3px; color: #666; text-transform: uppercase; 
-            margin-bottom: 5px; font-weight: 600;
+            font-size: 11px; 
+            letter-spacing: 3px; 
+            color: #666; 
+            text-transform: uppercase; 
+            margin-bottom: 5px; 
+            font-weight: 600;
         }
 
-        /* 胶囊按钮 */
+        /* 胶囊按钮样式 */
         .choice-btn {
             background: rgba(255, 255, 255, 0.03); 
             border: 1px solid rgba(212, 175, 55, 0.3); 
             color: #888;
-            padding: 12px 0; width: 160px;
-            font-family: inherit; font-size: 12px; cursor: pointer;
+            padding: 12px 0; 
+            width: 160px;
+            font-family: inherit; 
+            font-size: 12px; 
+            cursor: pointer;
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border-radius: 50px; position: relative; overflow: hidden;
+            border-radius: 50px; 
+            position: relative; 
+            overflow: hidden;
             backdrop-filter: blur(2px);
         }
         
         .choice-btn.active { 
-            border-color: #d4af37; color: #fff; 
+            border-color: #d4af37; 
+            color: #fff; 
             background: rgba(212, 175, 55, 0.15); 
             box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
         }
         
         .choice-btn:hover { 
-            border-color: #fff; color: #fff; transform: translateY(-2px); 
+            border-color: #fff; 
+            color: #fff; 
+            transform: translateY(-2px); 
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* 进入按钮 */
+        /* 进入按钮特效 */
         #enter-btn {
-            background: transparent; color: #d4af37; border: 1px solid #d4af37;
-            padding: 18px 80px; font-size: 16px; letter-spacing: 8px; cursor: pointer;
-            font-family: inherit; font-weight: 600; 
+            background: transparent; 
+            color: #d4af37; 
+            border: 1px solid #d4af37;
+            padding: 18px 80px; 
+            font-size: 16px; 
+            letter-spacing: 8px; 
+            cursor: pointer;
+            font-family: inherit; 
+            font-weight: 600; 
             border-radius: 50px; 
             transition: all 0.5s;
-            position: relative; overflow: hidden;
-            opacity: 0; animation: fadeUp 1s ease-out 0.8s forwards;
+            position: relative; 
+            overflow: hidden;
+            opacity: 0; 
+            animation: fadeUp 1s ease-out 0.8s forwards;
         }
         
         #enter-btn::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: -100%; 
+            width: 100%; 
+            height: 100%;
             background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
             transition: 0.5s;
         }
         #enter-btn:hover::before { left: 100%; transition: 0.7s; }
         #enter-btn:hover { 
-            background: #d4af37; color: #000; 
+            background: #d4af37; 
+            color: #000; 
             box-shadow: 0 0 40px rgba(212, 175, 55, 0.4); 
-            transform: scale(1.05); letter-spacing: 10px;
+            transform: scale(1.05); 
+            letter-spacing: 10px;
         }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
-        /* 金色闪光粒子 */
+        /* 神秘学闪光粒子 */
         .sparkle {
-            position: absolute; background: white; border-radius: 50%;
-            pointer-events: none; opacity: 0;
+            position: absolute; 
+            background: white; 
+            border-radius: 50%;
+            pointer-events: none; 
+            opacity: 0;
             box-shadow: 0 0 10px #d4af37, 0 0 20px #d4af37;
             animation: sparkleFloat linear forwards;
         }
@@ -121,22 +197,54 @@
             100% { opacity: 0; transform: translateY(-100px) scale(0); }
         }
 
-        /* --- 游戏内 UI --- */
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; color: #d4af37; opacity: 0; transition: opacity 1.5s; }
+        /* --- 游戏内 UI 层 --- */
+        #ui-layer { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 20; 
+            pointer-events: none; 
+            color: #d4af37; 
+            opacity: 0; 
+            transition: opacity 1.5s; 
+        }
         
+        /* 历史记录栏 */
         #history-container {
-            position: absolute; top: 20px; right: 20px;
-            display: flex; flex-direction: row; gap: 15px;
-            pointer-events: auto; z-index: 30; height: 100px; align-items: flex-start;
+            position: absolute; 
+            top: 20px; 
+            right: 20px;
+            display: flex; 
+            flex-direction: row; 
+            gap: 15px;
+            pointer-events: auto; 
+            z-index: 30; 
+            height: 100px; 
+            align-items: flex-start;
             transition: opacity 1s ease;
         }
         .history-slot {
-            width: 50px; height: 85px; background: #fff; border: 2px solid #d4af37; border-radius: 8px; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8); flex-shrink: 0; position: relative;
+            width: 50px; 
+            height: 85px; 
+            background: #fff; 
+            border: 2px solid #d4af37; 
+            border-radius: 8px; 
+            overflow: hidden;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-end;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8); 
+            flex-shrink: 0; 
+            position: relative;
             animation: slotEnter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        @keyframes slotEnter { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes slotEnter { 
+            from { opacity:0; transform: translateY(-20px); } 
+            to { opacity:1; transform: translateY(0); } 
+        }
         .history-slot img { position: absolute; top:0; left:0; width: 100%; height: 100%; object-fit: cover; }
         .history-info { position: relative; z-index: 2; width: 100%; background: rgba(0,0,0,0.8); text-align: center; padding: 2px 0; border-top: 1px solid #d4af37; }
         .history-name { font-size: 8px; color: #d4af37; font-weight: 700; white-space: nowrap; transform: scale(0.9); }
@@ -144,23 +252,42 @@
         .is-reversed img { transform: rotate(180deg); }
         .is-reversed .history-rev { display: block; }
 
+        /* 底部 HUD */
         #hud-center {
-            position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
-            text-align: center; color: #d4af37; pointer-events: none;
-            width: 100%; transition: opacity 1s;
+            position: absolute; 
+            bottom: 8%; 
+            left: 50%; 
+            transform: translateX(-50%);
+            text-align: center; 
+            color: #d4af37; 
+            pointer-events: none;
+            width: 100%; 
+            transition: opacity 1s;
         }
         #gesture-icon { font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.9; text-shadow: 0 0 15px #d4af37;}
         #status-text { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
 
-        /* 最终文字 */
+        /* 最终结果文字容器 */
         #final-text-container {
-            position: absolute; top: 72%; left: 0; width: 100%;
-            text-align: center; opacity: 0; transition: opacity 2s;
-            pointer-events: none; display: flex; justify-content: center; gap: 60px; 
+            position: absolute; 
+            top: 72%; 
+            left: 0; 
+            width: 100%;
+            text-align: center; 
+            opacity: 0; 
+            transition: opacity 2s;
+            pointer-events: none; 
+            display: flex; 
+            justify-content: center; 
+            gap: 60px; 
         }
         .final-card-label {
-            display: flex; flex-direction: column; width: 220px; 
-            color: #fff; text-shadow: 0 0 10px #d4af37; text-align: center;
+            display: flex; 
+            flex-direction: column; 
+            width: 220px; 
+            color: #fff; 
+            text-shadow: 0 0 10px #d4af37; 
+            text-align: center;
             animation: textFloat 3s ease-in-out infinite alternate;
         }
         @keyframes textFloat { from { transform: translateY(0); } to { transform: translateY(-5px); } }
@@ -168,26 +295,48 @@
         .final-name { font-size: 15px; font-weight: bold; color: #d4af37; margin-bottom: 8px; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 5px; }
         .final-meaning { font-size: 11px; color: #ccc; font-style: italic; line-height: 1.5; opacity: 0.8; }
 
-        /* 重启按钮 */
+        /* 重启按钮区域 */
         #end-ui {
-            position: absolute; bottom: 12%; left: 0; width: 100%;
-            display: flex; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 1.5s; z-index: 50;
+            position: absolute; 
+            bottom: 12%; 
+            left: 0; 
+            width: 100%;
+            display: flex; 
+            justify-content: center;
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 1.5s; 
+            z-index: 50;
         }
         #restart-btn {
-            background: rgba(0,0,0,0.7); border: 1px solid #d4af37; color: #d4af37;
-            padding: 12px 50px; font-size: 13px; letter-spacing: 4px; 
-            border-radius: 50px; cursor: pointer; font-family: inherit; transition: 0.4s;
+            background: rgba(0,0,0,0.7); 
+            border: 1px solid #d4af37; 
+            color: #d4af37;
+            padding: 12px 50px; 
+            font-size: 13px; 
+            letter-spacing: 4px; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-family: inherit; 
+            transition: 0.4s;
             backdrop-filter: blur(5px);
         }
         #restart-btn:hover { background: #d4af37; color: #000; box-shadow: 0 0 25px rgba(212, 175, 55, 0.6); }
 
-        /* --- 新增：页尾制作信息 --- */
+        /* --- 制作人员信息 --- */
         #credits {
-            position: absolute; bottom: 20px; right: 25px;
-            text-align: right; color: #a0a0a0; font-size: 10px;
-            line-height: 1.6; opacity: 0; transition: opacity 1.5s;
-            pointer-events: none; z-index: 50; font-family: 'Noto Serif SC', serif;
+            position: absolute; 
+            bottom: 20px; 
+            right: 25px;
+            text-align: right; 
+            color: #a0a0a0; 
+            font-size: 10px;
+            line-height: 1.6; 
+            opacity: 0; 
+            transition: opacity 1.5s;
+            pointer-events: none; 
+            z-index: 50; 
+            font-family: 'Noto Serif SC', serif;
             letter-spacing: 1px;
         }
 
@@ -234,7 +383,7 @@
         </div>
         
         <div id="credits">
-            Jerry Hu & Gemini <br>huqiuzhi10@gmail.com
+            Jerry Hu & Gemini 制作<br>huqiuzhi10@gmail.com
         </div>
 
         <div id="hud-center">
@@ -247,9 +396,7 @@
     <div id="canvas-container"></div>
 
 <script>
-// --- JS 逻辑开始 ---
-
-// 1. 神秘学闪光特效 (Mystic Sparkles)
+// 1. 闪光特效逻辑
 function createSparkles() {
     const screen = document.getElementById('start-screen');
     if(screen.style.display === 'none') return; 
@@ -278,7 +425,7 @@ setInterval(createSparkles, 200);
 
 
 /**
- * DATA
+ * DATA & CONFIG
  */
 const TEXTS = {
     en: {
@@ -311,73 +458,30 @@ const TEXTS = {
     }
 };
 
+// 基础数据 (不含URL，URL自动生成)
 const RWS_DATA = [
-    { id: 0, url: "https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg", 
-      en: { name: "The Fool", meaning: "New beginnings, innocence, spontaneity" },
-      zh: { name: "愚者", meaning: "新的开始，天真，自发性，冒险" } },
-    { id: 1, url: "https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg",
-      en: { name: "The Magician", meaning: "Manifestation, resourcefulness, power" },
-      zh: { name: "魔术师", meaning: "显化，资源丰富，力量，创造力" } },
-    { id: 2, url: "https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg",
-      en: { name: "High Priestess", meaning: "Intuition, sacred knowledge, subconscious" },
-      zh: { name: "女祭司", meaning: "直觉，神圣知识，潜意识，神秘" } },
-    { id: 3, url: "https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg",
-      en: { name: "The Empress", meaning: "Femininity, beauty, nature, nurturing" },
-      zh: { name: "皇后", meaning: "女性力量，美丽，自然，孕育" } },
-    { id: 4, url: "https://upload.wikimedia.org/wikipedia/commons/c/c3/RWS_Tarot_04_Emperor.jpg",
-      en: { name: "The Emperor", meaning: "Authority, establishment, structure" },
-      zh: { name: "皇帝", meaning: "权威，体制，结构，控制" } },
-    { id: 5, url: "https://upload.wikimedia.org/wikipedia/commons/8/8d/RWS_Tarot_05_Hierophant.jpg",
-      en: { name: "The Hierophant", meaning: "Spiritual wisdom, religious beliefs" },
-      zh: { name: "教皇", meaning: "精神智慧，信仰，传统，教导" } },
-    { id: 6, url: "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_06_The_Lovers.jpg",
-      en: { name: "The Lovers", meaning: "Love, harmony, relationships, choices" },
-      zh: { name: "恋人", meaning: "爱，和谐，关系，选择" } },
-    { id: 7, url: "https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg",
-      en: { name: "The Chariot", meaning: "Control, willpower, success, action" },
-      zh: { name: "战车", meaning: "控制，意志力，成功，行动" } },
-    { id: 8, url: "https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg",
-      en: { name: "Strength", meaning: "Strength, courage, persuasion, influence" },
-      zh: { name: "力量", meaning: "力量，勇气，说服，影响力" } },
-    { id: 9, url: "https://upload.wikimedia.org/wikipedia/commons/4/4d/RWS_Tarot_09_Hermit.jpg",
-      en: { name: "The Hermit", meaning: "Soul-searching, introspection, being alone" },
-      zh: { name: "隐士", meaning: "探索内心，内省，独处，指引" } },
-    { id: 10, url: "https://upload.wikimedia.org/wikipedia/commons/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg",
-      en: { name: "Wheel of Fortune", meaning: "Good luck, karma, destiny" },
-      zh: { name: "命运之轮", meaning: "好运，业力，生命周期，命运" } },
-    { id: 11, url: "https://upload.wikimedia.org/wikipedia/commons/e/e0/RWS_Tarot_11_Justice.jpg",
-      en: { name: "Justice", meaning: "Justice, fairness, truth" },
-      zh: { name: "正义", meaning: "正义，公平，真理，因果" } },
-    { id: 12, url: "https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg",
-      en: { name: "Hanged Man", meaning: "Pause, surrender, letting go" },
-      zh: { name: "倒吊人", meaning: "暂停，臣服，放手，新视角" } },
-    { id: 13, url: "https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg",
-      en: { name: "Death", meaning: "Endings, change, transformation" },
-      zh: { name: "死神", meaning: "结束，改变，转化，过渡" } },
-    { id: 14, url: "https://upload.wikimedia.org/wikipedia/commons/f/f8/RWS_Tarot_14_Temperance.jpg",
-      en: { name: "Temperance", meaning: "Balance, moderation, patience" },
-      zh: { name: "节制", meaning: "平衡，适度，耐心，目标" } },
-    { id: 15, url: "https://upload.wikimedia.org/wikipedia/commons/5/55/RWS_Tarot_15_Devil.jpg",
-      en: { name: "The Devil", meaning: "Shadow self, attachment, addiction" },
-      zh: { name: "恶魔", meaning: "阴暗面，执着，成瘾，束缚" } },
-    { id: 16, url: "https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg",
-      en: { name: "The Tower", meaning: "Sudden change, upheaval, chaos" },
-      zh: { name: "高塔", meaning: "突变，剧变，混乱，启示" } },
-    { id: 17, url: "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg",
-      en: { name: "The Star", meaning: "Hope, faith, purpose, renewal" },
-      zh: { name: "星星", meaning: "希望，信念，目标，新生" } },
-    { id: 18, url: "https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg",
-      en: { name: "The Moon", meaning: "Illusion, fear, anxiety, intuition" },
-      zh: { name: "月亮", meaning: "幻觉，恐惧，焦虑，潜意识" } },
-    { id: 19, url: "https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg",
-      en: { name: "The Sun", meaning: "Positivity, fun, warmth, success" },
-      zh: { name: "太阳", meaning: "积极，快乐，温暖，成功" } },
-    { id: 20, url: "https://upload.wikimedia.org/wikipedia/commons/d/dd/RWS_Tarot_20_Judgement.jpg",
-      en: { name: "Judgement", meaning: "Judgement, rebirth, inner calling" },
-      zh: { name: "审判", meaning: "审判，重生，内心召唤，赦免" } },
-    { id: 21, url: "https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg",
-      en: { name: "The World", meaning: "Completion, integration, accomplishment" },
-      zh: { name: "世界", meaning: "完成，整合，成就，圆满" } }
+    { id: 0, en: { name: "The Fool", meaning: "New beginnings, innocence, spontaneity" }, zh: { name: "愚者", meaning: "新的开始，天真，自发性，冒险" } },
+    { id: 1, en: { name: "The Magician", meaning: "Manifestation, resourcefulness, power" }, zh: { name: "魔术师", meaning: "显化，资源丰富，力量，创造力" } },
+    { id: 2, en: { name: "High Priestess", meaning: "Intuition, sacred knowledge" }, zh: { name: "女祭司", meaning: "直觉，神圣知识，潜意识，神秘" } },
+    { id: 3, en: { name: "The Empress", meaning: "Femininity, beauty, nature" }, zh: { name: "皇后", meaning: "女性力量，美丽，自然，孕育" } },
+    { id: 4, en: { name: "The Emperor", meaning: "Authority, establishment" }, zh: { name: "皇帝", meaning: "权威，体制，结构，控制" } },
+    { id: 5, en: { name: "The Hierophant", meaning: "Spiritual wisdom, beliefs" }, zh: { name: "教皇", meaning: "精神智慧，信仰，传统，教导" } },
+    { id: 6, en: { name: "The Lovers", meaning: "Love, harmony, choices" }, zh: { name: "恋人", meaning: "爱，和谐，关系，选择" } },
+    { id: 7, en: { name: "The Chariot", meaning: "Control, willpower, success" }, zh: { name: "战车", meaning: "控制，意志力，成功，行动" } },
+    { id: 8, en: { name: "Strength", meaning: "Strength, courage, persuasion" }, zh: { name: "力量", meaning: "力量，勇气，说服，影响力" } },
+    { id: 9, en: { name: "The Hermit", meaning: "Soul-searching, introspection" }, zh: { name: "隐士", meaning: "探索内心，内省，独处，指引" } },
+    { id: 10, en: { name: "Wheel of Fortune", meaning: "Good luck, karma, destiny" }, zh: { name: "命运之轮", meaning: "好运，业力，生命周期，命运" } },
+    { id: 11, en: { name: "Justice", meaning: "Justice, fairness, truth" }, zh: { name: "正义", meaning: "正义，公平，真理，因果" } },
+    { id: 12, en: { name: "Hanged Man", meaning: "Pause, surrender, letting go" }, zh: { name: "倒吊人", meaning: "暂停，臣服，放手，新视角" } },
+    { id: 13, en: { name: "Death", meaning: "Endings, change, transformation" }, zh: { name: "死神", meaning: "结束，改变，转化，过渡" } },
+    { id: 14, en: { name: "Temperance", meaning: "Balance, moderation, patience" }, zh: { name: "节制", meaning: "平衡，适度，耐心，目标" } },
+    { id: 15, en: { name: "The Devil", meaning: "Shadow self, addiction" }, zh: { name: "恶魔", meaning: "阴暗面，执着，成瘾，束缚" } },
+    { id: 16, en: { name: "The Tower", meaning: "Sudden change, upheaval" }, zh: { name: "高塔", meaning: "突变，剧变，混乱，启示" } },
+    { id: 17, en: { name: "The Star", meaning: "Hope, faith, renewal" }, zh: { name: "星星", meaning: "希望，信念，目标，新生" } },
+    { id: 18, en: { name: "The Moon", meaning: "Illusion, fear, anxiety" }, zh: { name: "月亮", meaning: "幻觉，恐惧，焦虑，潜意识" } },
+    { id: 19, en: { name: "The Sun", meaning: "Positivity, fun, warmth" }, zh: { name: "太阳", meaning: "积极，快乐，温暖，成功" } },
+    { id: 20, en: { name: "Judgement", meaning: "Judgement, rebirth, calling" }, zh: { name: "审判", meaning: "审判，重生，内心召唤，赦免" } },
+    { id: 21, en: { name: "The World", meaning: "Completion, integration" }, zh: { name: "世界", meaning: "完成，整合，成就，圆满" } }
 ];
 
 let currentLang = 'en';
@@ -385,6 +489,7 @@ let controlMode = 'hand';
 let isStarted = false;
 let deckList = [];
 
+// 游戏逻辑参数
 const MAX_SELECTION = 3; 
 let selectionCount = 0;
 let isRitualComplete = false;
@@ -441,11 +546,11 @@ function enterExperience() {
 }
 
 /**
- * THREE.JS SCENE
+ * THREE.JS SCENE SETUP
  */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(BG_COLOR);
-scene.fog = new THREE.FogExp2(BG_COLOR, 0.012); // Slightly clearer fog
+scene.fog = new THREE.FogExp2(BG_COLOR, 0.012);
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
 camera.position.set(0, 0, 0);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -454,13 +559,18 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 const texLoader = new THREE.TextureLoader();
+// 全局加载背景图 (.png)
+const texBackGlobal = texLoader.load('./cards/back.png'); 
+texBackGlobal.anisotropy = renderer.capabilities.getMaxAnisotropy();
+texBackGlobal.center.set(0.5, 0.5);
+
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 const frontLight = new THREE.DirectionalLight(0xffeaac, 0.6);
 frontLight.position.set(0, 2, 5);
 scene.add(frontLight);
 
-// Stars
+// 星空粒子
 const starGeo = new THREE.BufferGeometry();
 const starPos = new Float32Array(2500*3);
 for(let i=0;i<2500;i++) {
@@ -477,7 +587,7 @@ const starSystem = new THREE.Points(starGeo, starMat);
 scene.add(starSystem);
 
 /**
- * DECK
+ * DECK CONSTRUCTION
  */
 const deckGroup = new THREE.Group();
 scene.add(deckGroup);
@@ -491,6 +601,7 @@ shape.lineTo(-w+r, h); shape.quadraticCurveTo(-w, h, -w, h-r);
 shape.lineTo(-w, -h+r); shape.quadraticCurveTo(-w, -h, -w+r, -h);
 const faceGeo = new THREE.ShapeGeometry(shape);
 
+// 修复 UV
 function fixUVs(geometry) {
     const posAttribute = geometry.attributes.position;
     const uvAttribute = geometry.attributes.uv;
@@ -510,13 +621,16 @@ const outlineMat = new THREE.LineBasicMaterial({ color: GOLD_COLOR, linewidth: 2
 
 function createCardMesh(data, index, total) {
     const group = new THREE.Group();
+    // 自动加载正面图片
     const texFront = texLoader.load(data.url);
     texFront.anisotropy = renderer.capabilities.getMaxAnisotropy();
     texFront.center.set(0.5, 0.5);
     
-    const matBack = new THREE.MeshStandardMaterial({ color: 0xffffff, ...matBase });
+    // 材质
+    const matBack = new THREE.MeshStandardMaterial({ map: texBackGlobal, ...matBase });
     const matFront = new THREE.MeshStandardMaterial({ map: texFront, ...matBase });
 
+    // 网格构建
     const meshBack = new THREE.Mesh(faceGeo, matBack);
     meshBack.position.z = 0.005; 
     const meshFront = new THREE.Mesh(faceGeo, matFront);
@@ -530,6 +644,7 @@ function createCardMesh(data, index, total) {
 
     group.add(meshBack, meshFront, meshFiller, outlineMesh);
     
+    // 初始环形分布
     const step = (Math.PI * 2) / total;
     const theta = index * step;
     group.position.x = RADIUS * Math.sin(theta);
@@ -543,7 +658,13 @@ function createCardMesh(data, index, total) {
 function spawnDeck() {
     if(!isStarted) return;
     deckGroup.clear(); cardObjects = [];
-    deckList = RWS_DATA.map(d => ({...d}));
+    
+    // 生成带路径的数据
+    deckList = RWS_DATA.map(d => ({
+        ...d,
+        url: `./cards/${d.id}.png`
+    }));
+    
     deckList.forEach((item, i) => {
         const card = createCardMesh(item, i, deckList.length);
         deckGroup.add(card);
@@ -553,7 +674,7 @@ function spawnDeck() {
 }
 
 /**
- * INTERACTION
+ * INTERACTION LOGIC
  */
 let handState = 'OPEN';
 let handX = 0;
@@ -735,6 +856,7 @@ function dissolve(card, isReversed) {
     if (selectionCount >= MAX_SELECTION) startEndRitual();
 }
 
+// --- 仪式结束 ---
 function startEndRitual() {
     isRitualComplete = true;
     updateStatusText();
@@ -742,11 +864,10 @@ function startEndRitual() {
     document.getElementById('history-container').style.opacity = 0;
     document.getElementById('hud-center').style.opacity = 0;
     
-    // Show Restart Button & Credits after delay
     setTimeout(() => {
         document.getElementById('end-ui').style.opacity = 1;
         document.getElementById('end-ui').style.pointerEvents = 'auto';
-        document.getElementById('credits').style.opacity = 1;
+        document.getElementById('credits').style.opacity = 1; // Credits 显示
     }, 3500);
 
     cardObjects.forEach(c => {
@@ -761,7 +882,7 @@ function startEndRitual() {
         card.position.set(4 + index*0.5, 3, -4); 
         card.scale.set(0.2, 0.2, 0.2);
 
-        // Position: 2.4 Gap, -6.0 Depth
+        // Position: Gap 2.4, Depth -6.0
         card.userData.finalTargetPos = new THREE.Vector3((index - 1) * 2.4, 0, -6.0);
         card.userData.finalTargetScale = 0.8;
         card.userData.animProgress = 0;
