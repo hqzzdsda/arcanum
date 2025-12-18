@@ -544,9 +544,9 @@ const TEXTS = {
         lblLang: "Language",
         lblInput: "Input Method",
         enter: "ENTER VOID",
-        statusWave: "Move Hand L/R to Scroll · Pinch to Select",
-        statusMouse: "Drag to Scroll · Click to Select",
-        statusTouch: "Swipe to Scroll · Tap to Select",
+        statusWave: "Move Hand to Scroll · Stop to Snap",
+        statusMouse: "Drag to Spin · Click to Select",
+        statusTouch: "Swipe to Spin · Tap to Select",
         statusFist: "FIST TO REVEAL",
         statusSpace: "SPACE / HOLD TO REVEAL",
         statusReveal: "OBSERVING FATE...",
@@ -561,9 +561,9 @@ const TEXTS = {
         lblLang: "语言设置",
         lblInput: "操控方式",
         enter: "进入虚空",
-        statusWave: "左右移动手掌滚动 · 捏合选中",
-        statusMouse: "左右拖拽滚动 · 点击选中",
-        statusTouch: "左右滑动滚动 · 轻点选中",
+        statusWave: "移动手掌控制滚动 · 悬停吸附",
+        statusMouse: "拖拽转动 · 点击选中",
+        statusTouch: "滑动转动 · 轻点选中",
         statusFist: "握拳揭示命运",
         statusSpace: "按空格 / 长按揭示",
         statusReveal: "正在观测命运...",
@@ -816,7 +816,7 @@ function spawnDeck() {
 
 /**
  * ==========================================================
- * NEW PHYSICS ENGINE: FINITE SCROLL & PICKER LOGIC
+ * NEW PHYSICS ENGINE: FINITE SCROLL & UNIFIED LOGIC
  * ==========================================================
  */
 
@@ -825,16 +825,24 @@ const physics = {
     velocity: 0,
     lastInputPos: 0,
     lastInputTime: 0,
+    snapTarget: 0,
     
     // Constants
     friction: 0.96,        // 惯性摩擦系数 (逐帧衰减)
     snapThreshold: 0.0005, // 速度低于此值进入吸附 (rad/frame)
     minReleaseVel: 0.002,  // 松手时若速度低于此值，直接吸附，不进惯性
-    dragSensitivity: isMobile ? 0.004 : 0.003, // 1:1 跟手感微调
+    
+    // Drag Sensitivity
+    dragSensitivity: isMobile ? 0.004 : 0.003, // Mouse/Touch
+    joystickSensitivity: 0.05, // Hand Gesture Speed Multiplier
     
     // Boundaries (Strict Finite)
-    minRot: 0, 
-    maxRot: 0 
+    minRot: -Infinity, 
+    maxRot: 0.05,      // Head limit (Index 0)
+    
+    // For velocity calculation
+    dragStartTime: 0,
+    dragStartPos: 0
 };
 
 // 更新边界值：确保不滑出 Index 0 和 Index 21
@@ -847,8 +855,6 @@ function updateBoundaries() {
     // Card Index 0 needs Rotation = 0 to be at center.
     // Card Index 21 needs Rotation = -21 * step to be at center.
     // So valid rotation range is [-21*step, 0].
-    // If rotation > 0, we are pulling Index 0 to the right (viewing empty space on left).
-    // If rotation < -21*step, we are pulling Index 21 to the left.
     
     physics.maxRot = 0.001; // Strict Head
     physics.minRot = -((count - 1) * step) - 0.001; // Strict Tail
@@ -895,10 +901,9 @@ function updateCarouselPhysics() {
 
         case 'SNAPPING':
             // 快速吸附 (Ease-out)
-            // 目标: 80-120ms. @60fps = 5-7 frames.
-            // P factor 0.35 provides very fast convergence.
             const diff = physics.snapTarget - deckGroup.rotation.y;
-            deckGroup.rotation.y += diff * 0.35;
+            // P factor 0.25 provides solid click feel (80-120ms)
+            deckGroup.rotation.y += diff * 0.25;
 
             // 到达目标 (Tolerance)
             if (Math.abs(diff) < 0.0001) {
@@ -932,10 +937,9 @@ function enterSnap() {
     physics.snapTarget = -(targetIndex * step);
     
     physics.state = 'SNAPPING';
-    physics.velocity = 0;
 }
 
-// 手势专用的“速度映射”逻辑 (Joystick)
+// 手势 Joystick 物理逻辑 (位置 -> 速度)
 function updateHandGesturePhysics(handX) {
     if (isRitualComplete) return;
 
@@ -945,13 +949,13 @@ function updateHandGesturePhysics(handX) {
     if (Math.abs(handX) > deadzone) {
         physics.state = 'DRAGGING'; 
         
-        // 映射规则：
-        // Hand Right (X > 0) -> Array Slides Right -> Rotation Increases
-        // Hand Left  (X < 0) -> Array Slides Left  -> Rotation Decreases
+        // 映射规则：Joystick Rate Control
+        // Hand Right (X > 0) -> Velocity Negative (Spin towards Next Items / Tail)
+        // Hand Left  (X < 0) -> Velocity Positive (Spin towards Prev Items / Head)
         // Speed increases with distance from center
         
-        const speedFactor = (Math.abs(handX) - deadzone) * 0.06; // Max speed tuned
-        const direction = Math.sign(handX); 
+        const speedFactor = (Math.abs(handX) - deadzone) * physics.joystickSensitivity; 
+        const direction = -Math.sign(handX); // Invert direction for natural scroll
         const velocity = direction * speedFactor;
         
         // 应用位移
@@ -1085,7 +1089,7 @@ function initTouchListeners() {
     });
 }
 
-// 统一 Drag 处理
+// 统一 Drag 处理 (Mouse/Touch 1:1)
 function handleDragStart(x) {
     if (isRitualComplete) return;
     
@@ -1106,15 +1110,16 @@ function handleDragMove(x) {
     // 计算位移 (Drag 1:1)
     const deltaX = x - physics.lastInputPos;
     
-    // 映射：Mouse Left (delta < 0) -> Slide Left -> Rot decreases
-    // deltaX is pixels. Need to convert to Rotation.
+    // 映射：Mouse Left (delta < 0) -> Content Moves Left -> Rotation Decreases (See Next)
+    // Actually standard scroll: Drag Left -> Pull content Left.
+    // We want to see Next items (Index++). Index++ is Rotation Decreases.
+    // So DeltaX < 0 -> Rotation Decreases.
     // sensitivity controls "heaviness".
     const rotationDelta = deltaX * physics.dragSensitivity;
     
     deckGroup.rotation.y += rotationDelta;
     
     // 实时记录速度 (用于 Release)
-    // 简单平滑一下避免噪声
     physics.velocity = rotationDelta; 
 
     physics.lastInputPos = x;
