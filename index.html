@@ -373,6 +373,9 @@
             opacity: 1;
         }
 
+        /* Loading 呼吸灯动画 */
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
         /* --- 制作人员信息 --- */
         #credits {
             position: absolute; 
@@ -493,6 +496,23 @@
     <div id="canvas-container"></div>
 
 <script>
+// ================= API 配置区域 =================
+// 🔴 请在这里填入你的 API Key。如果留空，系统将使用本地预设文案。
+// 支持 OpenAI 格式的接口 (OpenAI, DeepSeek, Moonshot 等)
+const API_KEY = "sk-xMrEeQWVIiiQsVSuG3dwrXvi4UGvZlnqSjgnIrARmuSPsva7"; 
+
+// API 接口地址 (默认为 OpenAI)
+// 如果使用 DeepSeek，填: https://api.deepseek.com/chat/completions
+// 如果使用 Moonshot (Kimi)，填: https://api.moonshot.cn/v1/chat/completions
+const API_ENDPOINT = "https://max.openai365.top/v1"; 
+
+// 使用的模型名称
+// OpenAI: gpt-3.5-turbo, gpt-4
+// DeepSeek: deepseek-chat
+const API_MODEL = "gemini-3-pro-preview";
+// ==============================================
+
+
 // 检测是否移动设备
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -1080,8 +1100,8 @@ function startEndRitual() {
     setTimeout(() => { textContainer.style.opacity = 1; }, 2000);
 }
 
-// --- 新增：进入星空解说模式 ---
-function enterStarryVoid() {
+// --- 修改：进入星空解说模式 (支持异步 API) ---
+async function enterStarryVoid() {
     // 隐藏按钮和标签
     document.getElementById('view-reading-btn').style.display = 'none';
     document.getElementById('final-text-container').style.opacity = 0;
@@ -1090,13 +1110,14 @@ function enterStarryVoid() {
     chosen3DMeshes.forEach(mesh => { mesh.visible = false; });
     cardObjects.forEach(mesh => { mesh.visible = false; });
 
-    // 生成文案
-    const readingText = generateReadingText();
-
-    // 开始打字
     const overlay = document.getElementById('oracle-overlay');
-    typeWriter(readingText, overlay, () => {
-        // 打字结束，显示重启按钮
+    
+    // 显示 Loading 动画
+    const loadingText = currentLang === 'zh' ? "正在与星辰连接..." : "Connecting with the stars...";
+    overlay.innerHTML = `<div style="opacity:0.7; animation: pulse 1.5s infinite;">${loadingText}</div>`;
+
+    // 定义打字结束后的回调函数
+    const onTypingComplete = () => {
         const restartBtn = document.getElementById('restart-btn');
         restartBtn.style.display = 'block';
         restartBtn.style.opacity = 0;
@@ -1106,10 +1127,67 @@ function enterStarryVoid() {
             restartBtn.style.opacity = op;
             op += 0.05;
         }, 30);
-    });
+    };
+
+    // 尝试调用 API
+    if (API_KEY && API_KEY.length > 5) {
+        try {
+            const apiText = await callTarotAPI(chosen3DMeshes);
+            typeWriter(apiText, overlay, onTypingComplete);
+        } catch (e) {
+            console.error("API Error:", e);
+            // 失败则降级到本地文案
+            const fallbackText = generateReadingText(); 
+            typeWriter(fallbackText, overlay, onTypingComplete);
+        }
+    } else {
+        // 没有 Key，直接使用本地逻辑
+        // 稍微模拟一点延迟，更有仪式感
+        setTimeout(() => {
+            const text = generateReadingText();
+            typeWriter(text, overlay, onTypingComplete);
+        }, 1500);
+    }
 }
 
-// --- 新增：生成解说文案 ---
+// --- 新增：调用 LLM API 获取解读 ---
+async function callTarotAPI(cards) {
+    const cardDescriptions = cards.map((c, i) => {
+        const name = c.userData.rawData[currentLang].name;
+        const posName = currentLang === 'zh' ? ["过去", "现在", "未来"][i] : ["Past", "Present", "Future"][i];
+        const status = c.userData.isReversed 
+            ? (currentLang === 'zh' ? "逆位 (Reversed)" : "Reversed") 
+            : (currentLang === 'zh' ? "正位 (Upright)" : "Upright");
+        return `${posName}: ${name} [${status}]`;
+    }).join("\n");
+
+    const prompt = currentLang === 'zh' 
+        ? `你是一位神秘的塔罗牌占卜师。请根据以下牌阵为求问者解读命运：\n${cardDescriptions}\n\n要求：\n1. 用中文回答。\n2. 风格神秘、诗意、带有宿命感。\n3. 不要罗列牌意，而是将三张牌串联成一个完整的故事或指引。\n4. 字数控制在150字以内。`
+        : `You are a mystical Tarot reader. Interpret the following spread for the seeker:\n${cardDescriptions}\n\nRequirements:\n1. Answer in English.\n2. Tone: Mystical, poetic, ominous yet hopeful.\n3. Do not list meanings separately; weave them into a coherent narrative.\n4. Keep it under 150 words.`;
+
+    const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`
+        },
+        body: JSON.stringify({
+            model: API_MODEL,
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+            max_tokens: 300
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`API Request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+}
+
+// --- 备选：生成本地解说文案 ---
 function generateReadingText() {
     const m1 = chosen3DMeshes[0].userData.rawData[currentLang].meaning;
     const m2 = chosen3DMeshes[1].userData.rawData[currentLang].meaning;
@@ -1130,7 +1208,7 @@ function generateReadingText() {
     }
 }
 
-// --- 新增：打字机特效 ---
+// --- 打字机特效 ---
 function typeWriter(htmlText, element, callback) {
     element.innerHTML = "";
     const plainText = htmlText.replace(/<br>/g, '\n'); 
