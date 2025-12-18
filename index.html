@@ -498,13 +498,16 @@
 <script>
 // ================= API 配置区域 =================
 // 🔴 请在这里填入你的 DeepSeek API Key (sk-xxxxxxxx)
-const API_KEY = "sk-35854e28287441c98a1084ca0cd903a0"; 
+const API_KEY = "sk-92c5cec08baf4941a5ab5a185cd9c22f"; 
 
 // DeepSeek 官方接口地址
 const API_ENDPOINT = "https://api.deepseek.com/chat/completions"; 
 
 // DeepSeek 模型名称
 const API_MODEL = "deepseek-chat"; 
+
+// 开启代理以解决 CORS 跨域问题 (因为是纯前端项目，通常必须开启)
+const USE_CORS_PROXY = true;
 
 // 调试开关：设为 true 会弹出错误警告，发布时设为 false
 const DEBUG_MODE = true;
@@ -1137,7 +1140,7 @@ async function enterStarryVoid() {
             
             // 🔴 调试模式：弹出错误警告
             if (DEBUG_MODE) {
-                alert("API 调用失败: " + e.message + "\n\n原因可能是：\n1. 浏览器跨域限制(CORS)。\n2. API Key 无效。\n\n系统将自动降级为本地文案。");
+                alert("API 调用失败: " + e.message + "\n\n原因可能是：\n1. 浏览器跨域限制(CORS) - 即使代理开启也可能因网络问题失败。\n2. API Key 无效。\n\n系统将自动降级为本地文案。");
             }
             
             // 失败则降级到本地文案
@@ -1153,7 +1156,7 @@ async function enterStarryVoid() {
     }
 }
 
-// --- 新增：调用 LLM API 获取解读 ---
+// --- 新增：调用 LLM API 获取解读 (包含 Proxy 逻辑) ---
 async function callTarotAPI(cards) {
     const cardDescriptions = cards.map((c, i) => {
         const name = c.userData.rawData[currentLang].name;
@@ -1170,10 +1173,17 @@ async function callTarotAPI(cards) {
 
     // 增加 AbortController 用于超时控制
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20秒超时 (代理可能较慢)
+
+    // 构建请求 URL
+    let url = API_ENDPOINT;
+    // 如果开启了代理，将目标 URL 编码后拼接到代理服务地址后面
+    if (USE_CORS_PROXY) {
+        url = "https://corsproxy.io/?" + encodeURIComponent(API_ENDPOINT);
+    }
 
     try {
-        const response = await fetch(API_ENDPOINT, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
