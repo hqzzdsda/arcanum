@@ -718,6 +718,14 @@ function createCardMesh(data, index, total) {
 
 function spawnDeck() {
     if(!isStarted) return;
+   // 判断是否是竖屏（手机）
+    const isPortrait = window.innerHeight > window.innerWidth;
+    
+    // 设置高度：2.0 是向上平移的距离，数字越大越靠上
+    // 电脑/横屏时设为 0 或者其他数值
+    deckGroup.position.y = isPortrait ? 2.0 : 0; 
+    
+    // ----------------------------------
     deckGroup.clear(); cardObjects = [];
     
     // 生成带路径数据
