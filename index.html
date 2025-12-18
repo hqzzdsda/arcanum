@@ -282,7 +282,7 @@
             pointer-events: none; 
             display: flex; 
             justify-content: center; 
-            gap: 53px; 
+            gap: 120px; /* 桌面端间距改大 */
             flex-wrap: wrap; /* 允许换行 */
             padding: 0 20px;
             box-sizing: border-box;
@@ -302,19 +302,23 @@
         .final-name { font-size: 15px; font-weight: bold; color: #d4af37; margin-bottom: 8px; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 5px; }
         .final-meaning { font-size: 11px; color: #ccc; font-style: italic; line-height: 1.5; opacity: 0.8; }
 
-        /* 重启按钮区域 */
+        /* 重启按钮区域 (包含查看指引) */
         #end-ui {
             position: absolute; 
             bottom: 12%; 
             left: 0; 
             width: 100%;
             display: flex; 
+            flex-direction: column; /* 垂直排列 */
+            align-items: center;
             justify-content: center;
             opacity: 0; 
             pointer-events: none; 
             transition: opacity 1.5s; 
             z-index: 50;
+            gap: 20px;
         }
+        
         #restart-btn {
             background: rgba(0,0,0,0.7); 
             border: 1px solid #d4af37; 
@@ -329,6 +333,45 @@
             backdrop-filter: blur(5px);
         }
         #restart-btn:hover { background: #d4af37; color: #000; box-shadow: 0 0 25px rgba(212, 175, 55, 0.6); }
+
+        /* 新增：查看指引按钮 */
+        #view-reading-btn {
+            background: #d4af37;  /* 金色背景 */
+            color: #000;          /* 黑色文字 */
+            border: 1px solid #d4af37;
+            padding: 15px 60px;
+            font-size: 14px;
+            letter-spacing: 4px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.4s;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+        #view-reading-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.8);
+        }
+
+        /* 新增：解说文字全屏容器 */
+        #oracle-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 700px;
+            text-align: center;
+            color: #fff;
+            font-size: 18px;       
+            line-height: 2.0;      
+            font-family: 'Noto Serif SC', serif;
+            text-shadow: 0 0 10px #d4af37;
+            z-index: 60;
+            pointer-events: none; /* 开始时不可点击 */
+            opacity: 1;
+        }
 
         /* --- 制作人员信息 --- */
         #credits {
@@ -377,15 +420,18 @@
             #credits { text-align: center; right: 0; width: 100%; bottom: 10px; font-size: 8px; }
             
             /* 最终结果文字调整 */
-	  #final-text-container { 
-   	 top: 47%;           /* 调整垂直位置 */
-   	 flex-direction: column; /* 强制垂直排列，防止文字挤压 */
-   	 align-items: center;    /* 居中对齐 */
-    	max-height: 40vh;       /* 限制高度，防止遮挡底部按钮 */
-    	overflow-y: auto;       /* 如果文字太多，允许滚动 */
-   	 gap: 10px;
-	}
-           .final-card-label { width: 100%; max-width: 300px; }
+            #final-text-container { 
+                top: 47%;           /* 调整垂直位置 */
+                flex-direction: column; /* 强制垂直排列，防止文字挤压 */
+                align-items: center;    /* 居中对齐 */
+                max-height: 40vh;       /* 限制高度，防止遮挡底部按钮 */
+                overflow-y: auto;       /* 如果文字太多，允许滚动 */
+                gap: 10px; /* 移动端间距改回小值 */
+            }
+            .final-card-label { width: 100%; max-width: 300px; }
+            
+            /* 解说文字在手机上小一点 */
+            #oracle-overlay { font-size: 14px; width: 90%; }
         }
     </style>
     
@@ -423,8 +469,14 @@
         <div id="history-container"></div>
         <div id="final-text-container"></div>
         
+        <!-- 新增：解说文字容器 -->
+        <div id="oracle-overlay"></div>
+
         <div id="end-ui">
-            <button id="restart-btn" onclick="location.reload()">RESTART RITUAL</button>
+            <!-- 新增：查看指引按钮 -->
+            <button id="view-reading-btn" onclick="enterStarryVoid()">REVEAL DESTINY</button>
+            <!-- 原有：重启按钮 (初始隐藏) -->
+            <button id="restart-btn" onclick="location.reload()" style="display:none">RESTART RITUAL</button>
         </div>
         
         <div id="credits">
@@ -483,7 +535,7 @@ const TEXTS = {
         enter: "ENTER VOID",
         statusWave: "Wave to Turn · Pinch Center Card",
         statusMouse: "Move to Turn · Hold to Grab",
-        statusTouch: "Tap left or right to Turn · Hold to Grab", // 新增 Touch 提示
+        statusTouch: "Tap left or right to Turn · Hold to Grab",
         statusFist: "FIST TO REVEAL",
         statusSpace: "SPACE / HOLD TO REVEAL",
         statusReveal: "OBSERVING FATE...",
@@ -500,7 +552,7 @@ const TEXTS = {
         enter: "进入虚空",
         statusWave: "挥手转动牌阵 · 捏合手指选中",
         statusMouse: "移动鼠标转动 · 按住左键抓取",
-        statusTouch: "左右轻点转动 · 长按抓取/揭示", // 新增 Touch 提示
+        statusTouch: "左右轻点转动 · 长按抓取/揭示",
         statusFist: "握拳揭示命运",
         statusSpace: "按空格 / 长按揭示",
         statusReveal: "正在观测命运...",
@@ -539,7 +591,7 @@ const RWS_DATA = [
 ];
 
 let currentLang = 'en';
-// 如果是手机，默认使用 Mouse/Touch 模式，避免 MediaPipe 性能问题或权限问题干扰体验
+// 如果是手机，默认使用 Mouse/Touch 模式
 let controlMode = isMobile ? 'mouse' : 'hand'; 
 let isStarted = false;
 let deckList = [];
@@ -700,9 +752,11 @@ function createCardMesh(data, index, total) {
     meshFront.position.z = -0.005;
     const meshFiller = new THREE.Mesh(faceGeo, edgeMat);
     meshFiller.scale.set(0.995, 0.995, 1);
-    //const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
-    //outlineMesh.position.z = 0.006; outlineMesh.visible = false;
-    //group.userData.outline = outlineMesh;
+    
+    // 取消高光 outline
+    // const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
+    // outlineMesh.position.z = 0.006; outlineMesh.visible = false;
+    // group.userData.outline = outlineMesh;
 
     group.add(meshBack, meshFront, meshFiller);
     
@@ -721,11 +775,9 @@ function spawnDeck() {
    // 判断是否是竖屏（手机）
     const isPortrait = window.innerHeight > window.innerWidth;
     
-    // 设置高度：2.0 是向上平移的距离，数字越大越靠上
-    // 电脑/横屏时设为 0 或者其他数值
+    // 设置高度
     deckGroup.position.y = isPortrait ? 2.0 : 0; 
     
-    // ----------------------------------
     deckGroup.clear(); cardObjects = [];
     
     // 生成带路径数据
@@ -776,7 +828,7 @@ function initMouseListeners() {
     });
 }
 
-// 新增：触摸事件监听 (Mobile Support)
+// 触摸事件监听 (Mobile Support)
 function initTouchListeners() {
     const container = document.getElementById('canvas-container');
     
@@ -790,7 +842,6 @@ function initTouchListeners() {
     container.addEventListener('touchstart', (e) => {
         const touch = e.touches[0];
         handX = (touch.clientX / window.innerWidth) * 2 - 1;
-        // 触摸开始视为"捏合"准备，长按或操作由 handleInput 决定
         handState = 'PINCH'; 
         updateCursorIcon();
     }, { passive: false });
@@ -862,13 +913,11 @@ function handleInput() {
         centerCard = null;
     }
 
-    // 交互逻辑统一：鼠标按下或触摸（PINCH）选中
-    // 对于 Mobile，为了区分滑动和点击，可以用简单的逻辑：如果手势处于 PINCH 但没有大幅度移动 handX，则视为选中
     if (handState === 'PINCH' && centerCard && !activeCard) selectCard(centerCard);
 
     if (activeCard) {
         // 选中后的卡牌位置
-        const targetZ = isMobile ? -3.5 : -2.2; // 移动端稍微远一点，或者根据相机位置调整
+        const targetZ = isMobile ? -3.5 : -2.2;
         activeCard.position.lerp(new THREE.Vector3(0, 0, targetZ), 0.1);
         
         if (activeCard.userData.state === 'SELECTED') {
@@ -876,10 +925,7 @@ function handleInput() {
             activeCard.quaternion.slerp(idleQ, 0.1);
             updateStatusText();
             
-            // 移动端长按模拟 FIST (这里简化逻辑：如果是 Touch 模式，长时间 PINCH 视为确认揭示)
-            // 为了简化，Touch 模式下只要再次点击(PINCH) 或者 手势模式下 FIST 即可
             if (handState === 'FIST' || (controlMode === 'mouse' && handState === 'PINCH')) {
-                 // 稍微加个延迟防止误触
                  if(!activeCard.userData.revealTimer) activeCard.userData.revealTimer = Date.now();
                  if(Date.now() - activeCard.userData.revealTimer > 500) {
                      revealCard(activeCard);
@@ -980,9 +1026,19 @@ function startEndRitual() {
     document.getElementById('hud-center').style.opacity = 0;
     
     setTimeout(() => {
+        // 显示底部UI
         document.getElementById('end-ui').style.opacity = 1;
         document.getElementById('end-ui').style.pointerEvents = 'auto';
         document.getElementById('credits').style.opacity = 1;
+
+        // --- 逻辑变更：先显示查看指引按钮，隐藏重启按钮 ---
+        document.getElementById('view-reading-btn').style.display = 'block';
+        document.getElementById('restart-btn').style.display = 'none';
+
+        // 设置按钮语言
+        const btnText = currentLang === 'zh' ? "揭示指引" : "REVEAL FATE";
+        document.getElementById('view-reading-btn').innerText = btnText;
+
     }, 3500);
 
     cardObjects.forEach(c => {
@@ -999,17 +1055,10 @@ function startEndRitual() {
         card.scale.set(0.2, 0.2, 0.2);
 
         // 响应式最终位置计算
-        // 手机屏幕窄，需要排列更紧凑或者垂直排列，这里做简单缩放适配
         const isPortrait = window.innerHeight > window.innerWidth;
-	// 1. 间距大一点：将 1.5 改为 2.2 (数字越大，左右间隔越宽)
-	const gap = isPortrait ? 1.8 : 2.2;     
-
-	// 2. 深度（可选）：保持 -9.0，如果觉得还是太小，可以把 -9.0 改成 -7.0 (越接近0越近)
-	const depth = isPortrait ? -7.0 : -6.0; 
-
-	// 3. 位置向上：定义一个新的变量 targetY
-	// 如果是竖屏，Y 设为 2.0 (正数向上)；横屏保持 0 (居中)
-	const targetY = isPortrait ? 3.0 : 0;
+        const gap = isPortrait ? 1.8 : 2.2;      
+        const depth = isPortrait ? -7.0 : -6.0; 
+        const targetY = isPortrait ? 3.0 : 0;
         
         card.userData.finalTargetPos = new THREE.Vector3((index - 1) * gap, targetY, depth);
         card.userData.finalTargetScale = 0.8;
@@ -1029,6 +1078,76 @@ function startEndRitual() {
         textContainer.appendChild(div);
     });
     setTimeout(() => { textContainer.style.opacity = 1; }, 2000);
+}
+
+// --- 新增：进入星空解说模式 ---
+function enterStarryVoid() {
+    // 隐藏按钮和标签
+    document.getElementById('view-reading-btn').style.display = 'none';
+    document.getElementById('final-text-container').style.opacity = 0;
+    
+    // 隐藏所有3D卡牌
+    chosen3DMeshes.forEach(mesh => { mesh.visible = false; });
+    cardObjects.forEach(mesh => { mesh.visible = false; });
+
+    // 生成文案
+    const readingText = generateReadingText();
+
+    // 开始打字
+    const overlay = document.getElementById('oracle-overlay');
+    typeWriter(readingText, overlay, () => {
+        // 打字结束，显示重启按钮
+        const restartBtn = document.getElementById('restart-btn');
+        restartBtn.style.display = 'block';
+        restartBtn.style.opacity = 0;
+        let op = 0;
+        const fadeTimer = setInterval(() => {
+            if(op >= 1) clearInterval(fadeTimer);
+            restartBtn.style.opacity = op;
+            op += 0.05;
+        }, 30);
+    });
+}
+
+// --- 新增：生成解说文案 ---
+function generateReadingText() {
+    const m1 = chosen3DMeshes[0].userData.rawData[currentLang].meaning;
+    const m2 = chosen3DMeshes[1].userData.rawData[currentLang].meaning;
+    const m3 = chosen3DMeshes[2].userData.rawData[currentLang].meaning;
+    
+    if (currentLang === 'zh') {
+        return `命运的轨迹已在星辰中显现...<br><br>` +
+               `过去，你经历了 ${m1}。<br>` +
+               `此刻，正如 ${m2} 所昭示的，你需要专注于当下的力量。<br>` +
+               `而未来，${m3} 将会是你的指引。<br><br>` +
+               `相信直觉，拥抱变化。`;
+    } else {
+        return `The stars have aligned to reveal your path...<br><br>` +
+               `In the past, you walked through ${m1}.<br>` +
+               `Presently, as shown by ${m2}, focus on your inner power.<br>` +
+               `For the future, let ${m3} be your guiding light.<br><br>` +
+               `Trust your intuition. Embrace the change.`;
+    }
+}
+
+// --- 新增：打字机特效 ---
+function typeWriter(htmlText, element, callback) {
+    element.innerHTML = "";
+    const plainText = htmlText.replace(/<br>/g, '\n'); 
+    let i = 0;
+    const speed = 50; 
+    
+    function type() {
+        if (i < plainText.length) {
+            const char = plainText.charAt(i);
+            element.innerHTML += (char === '\n') ? '<br>' : char;
+            i++;
+            setTimeout(type, speed);
+        } else {
+            if (callback) callback();
+        }
+    }
+    type();
 }
 
 function animateFinalFormation() {
