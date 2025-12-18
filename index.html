@@ -497,19 +497,17 @@
 
 <script>
 // ================= API 配置区域 =================
-// 🔴 请在这里填入你的 API Key。如果留空，系统将使用本地预设文案。
-// 支持 OpenAI 格式的接口 (OpenAI, DeepSeek, Moonshot 等)
-const API_KEY = "sk-da6b08a62c27485eb8dc00468c1e228a"; 
+// 🔴 请在这里填入你的 DeepSeek API Key (sk-xxxxxxxx)
+const API_KEY = "sk-35854e28287441c98a1084ca0cd903a0"; 
 
-// API 接口地址 (默认为 OpenAI)
-// 如果使用 DeepSeek，填: https://api.deepseek.com/chat/completions
-// 如果使用 Moonshot (Kimi)，填: https://api.moonshot.cn/v1/chat/completions
+// DeepSeek 官方接口地址
 const API_ENDPOINT = "https://api.deepseek.com/chat/completions"; 
 
-// 使用的模型名称
-// OpenAI: gpt-3.5-turbo, gpt-4
-// DeepSeek: deepseek-chat
-const API_MODEL = "deepseek-chat";
+// DeepSeek 模型名称
+const API_MODEL = "deepseek-chat"; 
+
+// 调试开关：设为 true 会弹出错误警告，发布时设为 false
+const DEBUG_MODE = true;
 // ==============================================
 
 
@@ -1136,13 +1134,18 @@ async function enterStarryVoid() {
             typeWriter(apiText, overlay, onTypingComplete);
         } catch (e) {
             console.error("API Error:", e);
+            
+            // 🔴 调试模式：弹出错误警告
+            if (DEBUG_MODE) {
+                alert("API 调用失败: " + e.message + "\n\n原因可能是：\n1. 浏览器跨域限制(CORS)。\n2. API Key 无效。\n\n系统将自动降级为本地文案。");
+            }
+            
             // 失败则降级到本地文案
             const fallbackText = generateReadingText(); 
             typeWriter(fallbackText, overlay, onTypingComplete);
         }
     } else {
         // 没有 Key，直接使用本地逻辑
-        // 稍微模拟一点延迟，更有仪式感
         setTimeout(() => {
             const text = generateReadingText();
             typeWriter(text, overlay, onTypingComplete);
@@ -1165,26 +1168,40 @@ async function callTarotAPI(cards) {
         ? `你是一位神秘的塔罗牌占卜师。请根据以下牌阵为求问者解读命运：\n${cardDescriptions}\n\n要求：\n1. 用中文回答。\n2. 风格神秘、诗意、带有宿命感。\n3. 不要罗列牌意，而是将三张牌串联成一个完整的故事或指引。\n4. 字数控制在150字以内。`
         : `You are a mystical Tarot reader. Interpret the following spread for the seeker:\n${cardDescriptions}\n\nRequirements:\n1. Answer in English.\n2. Tone: Mystical, poetic, ominous yet hopeful.\n3. Do not list meanings separately; weave them into a coherent narrative.\n4. Keep it under 150 words.`;
 
-    const response = await fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
-            model: API_MODEL,
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7,
-            max_tokens: 300
-        })
-    });
+    // 增加 AbortController 用于超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
 
-    if (!response.ok) {
-        throw new Error(`API Request failed: ${response.status}`);
+    try {
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: API_MODEL,
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.7,
+                max_tokens: 300
+            }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            // 尝试读取错误信息
+            const errText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errText}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+    } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
 }
 
 // --- 备选：生成本地解说文案 ---
