@@ -544,9 +544,9 @@ const TEXTS = {
         lblLang: "Language",
         lblInput: "Input Method",
         enter: "ENTER VOID",
-        statusWave: "Drag to Spin · Pinch to Select",
-        statusMouse: "Drag to Spin · Click to Select",
-        statusTouch: "Swipe to Spin · Tap to Select",
+        statusWave: "Move Hand L/R to Scroll · Pinch to Select",
+        statusMouse: "Drag to Scroll · Click to Select",
+        statusTouch: "Swipe to Scroll · Tap to Select",
         statusFist: "FIST TO REVEAL",
         statusSpace: "SPACE / HOLD TO REVEAL",
         statusReveal: "OBSERVING FATE...",
@@ -561,9 +561,9 @@ const TEXTS = {
         lblLang: "语言设置",
         lblInput: "操控方式",
         enter: "进入虚空",
-        statusWave: "挥手拨动 · 捏合选中",
-        statusMouse: "拖拽拨动 · 点击选中",
-        statusTouch: "滑动拨动 · 轻点选中",
+        statusWave: "左右移动手掌滚动 · 捏合选中",
+        statusMouse: "左右拖拽滚动 · 点击选中",
+        statusTouch: "左右滑动滚动 · 轻点选中",
         statusFist: "握拳揭示命运",
         statusSpace: "按空格 / 长按揭示",
         statusReveal: "正在观测命运...",
@@ -766,8 +766,16 @@ function createCardMesh(data, index, total) {
     
     group.add(meshBack, meshFront, meshFiller);
     
+    // 计算卡牌在环上的角度
+    // 假设 Index 0 在角度 0，往负方向排列？或者正方向
+    // 遵循 ThreeJS 右手定则：
+    // Z正对屏幕。我们希望 Index 0 在最靠近相机处（0,0, -R 不对，是 Z=R? 不，相机在 Z=0 里面，牌在 Z=-R）
+    // 让我们沿用原逻辑：position.x = sin(theta), position.z = -cos(theta)
+    // 当 theta=0 -> x=0, z=-R (正前方)
+    
     const step = (Math.PI * 2) / total;
-    const theta = index * step;
+    const theta = index * step; 
+    
     group.position.x = RADIUS * Math.sin(theta);
     group.position.z = -RADIUS * Math.cos(theta);
     group.lookAt(0, 0, 0);
@@ -777,6 +785,7 @@ function createCardMesh(data, index, total) {
         rawData: data, 
         state: 'IDLE', 
         theta: theta, 
+        index: index, // 记录原始索引用于吸附计算
         isChosen: false,
         baseColor: 0xffffff 
     };
@@ -802,86 +811,200 @@ function spawnDeck() {
         deckGroup.add(card);
         cardObjects.push(card);
     });
+    
+    // 初始化旋转角度，确保第一张牌在中间
+    deckGroup.rotation.y = 0;
+    
     document.getElementById('loader').style.display = 'none';
 }
 
 /**
  * ==========================================================
- * NEW: PHYSICS ENGINE FOR APPLE-STYLE SCROLLING
+ * REFACTORED: FINITE SCROLL PHYSICS (Apple Picker Style)
  * ==========================================================
  */
 
-// 物理引擎状态
 const physics = {
-    isDragging: false,
+    state: 'IDLE', // IDLE, DRAGGING, INERTIA, SNAPPING
     velocity: 0,
-    lastInputPos: 0,   // 上一帧的输入位置
-    lastInputTime: 0,  // 上一帧的时间
+    lastInputPos: 0,
+    lastInputTime: 0,
     dragStartTime: 0,
     dragStartPos: 0,
-    isSnapping: false,
-    snapTarget: 0,     // 目标旋转角度
-    friction: 0.96,    // 惯性摩擦力
+    snapTarget: 0,
+    
+    // Constants
+    friction: 0.96,       // 惯性摩擦系数
     snapThreshold: 0.001, // 速度低于此值开始吸附
-    moveThreshold: 0.01 // 判断是点击还是拖拽的阈值
+    minReleaseVel: 0.002, // 松手时速度小于此值直接吸附，不进惯性
+    dragSensitivity: isMobile ? 0.003 : 0.002,
+    
+    // Boundaries (Finite Scroll)
+    // 牌是按照 index * step 排列的。
+    // 要让 index=0 居中，GroupRotation = 0
+    // 要让 index=N-1 居中，GroupRotation = - (N-1) * step
+    // 所以范围是 [-(N-1)*step, 0]
+    // 稍微给一点 rubber band 空间，或者严格限制
+    minRot: 0, 
+    maxRot: 0  // 将在 update 里动态计算
 };
 
-// 手势输入状态
-let handState = 'OPEN';
-let activeCard = null; // 当前正在被选中（吸附出）的牌
-let centerCard = null; // 当前视觉中心的牌
+// 更新边界值
+function updateBoundaries() {
+    if (!deckList.length) return;
+    const count = deckList.length;
+    const step = (Math.PI * 2) / count;
+    // index 0 -> rot 0
+    // index max -> rot - (max * step)
+    // 注意方向：
+    // 如果我往左拖（Input < 0），GroupRot 变小？
+    // handleDragMove: deltaX < 0 -> rotation += delta * sens
+    // 如果 deltaX 是负数（向左拖），rotation 变小
+    // 此时原本在右边的牌（Index更大，Theta更大）会转过来吗？
+    // Card Theta: index * step. Position: sin(theta).
+    // Group Rotation: R. Total Angle = theta + R.
+    // To center card i (theta_i), we need sin(theta_i + R) = 0 -> theta_i + R = 0 -> R = -theta_i
+    // 所以 Card 0 (theta=0) 需要 R=0
+    // Card 1 (theta=step) 需要 R=-step
+    // Card 21 需要 R = -21*step
+    // 所以 R 的范围是 [-21*step, 0]
+    
+    physics.maxRot = 0.05; // 允许稍微过头一点点 (Head)
+    physics.minRot = -((count - 1) * step) - 0.05; // (Tail)
+}
 
-// 通用物理更新函数 (核心)
 function updateCarouselPhysics() {
-    if (isRitualComplete) return;
+    if (isRitualComplete || !deckList.length) return;
+    updateBoundaries();
 
-    // 1. 惯性阶段
-    if (!physics.isDragging && !physics.isSnapping) {
-        // 应用摩擦力
-        physics.velocity *= physics.friction;
-        deckGroup.rotation.y += physics.velocity;
+    // 状态机逻辑
+    switch (physics.state) {
+        case 'DRAGGING':
+            // 纯跟随，无额外物理，但在 handleDragMove 里处理了
+            break;
 
-        // 速度极低时，触发吸附 (Snap)
-        if (Math.abs(physics.velocity) < physics.snapThreshold) {
-            startSnapping();
-        }
-    }
+        case 'INERTIA':
+            // 1. 应用速度
+            deckGroup.rotation.y += physics.velocity;
+            // 2. 摩擦衰减
+            physics.velocity *= physics.friction;
+            
+            // 3. 边界检查 (Hard Clamp with Bounce-back feel or just Clamp)
+            // 这里做简单 Clamp，防止飞出太远
+            if (deckGroup.rotation.y > physics.maxRot) {
+                deckGroup.rotation.y = physics.maxRot;
+                physics.velocity = 0;
+                enterSnap();
+            } else if (deckGroup.rotation.y < physics.minRot) {
+                deckGroup.rotation.y = physics.minRot;
+                physics.velocity = 0;
+                enterSnap();
+            }
 
-    // 2. 吸附阶段 (Snap to grid)
-    if (physics.isSnapping) {
-        // 简单的 P 比例控制器进行吸附
-        const diff = physics.snapTarget - deckGroup.rotation.y;
-        deckGroup.rotation.y += diff * 0.1; // 0.1 是吸附硬度
+            // 4. 速度极低 -> 进入吸附
+            if (Math.abs(physics.velocity) < physics.snapThreshold) {
+                enterSnap();
+            }
+            break;
 
-        // 到达目标
-        if (Math.abs(diff) < 0.001) {
-            deckGroup.rotation.y = physics.snapTarget;
-            physics.isSnapping = false;
-            physics.velocity = 0;
-        }
+        case 'SNAPPING':
+            // 简单的 P 控制器 (Spring-like ease out)
+            const diff = physics.snapTarget - deckGroup.rotation.y;
+            // 偏硬的 ease-out (0.15 ~ 0.2)
+            deckGroup.rotation.y += diff * 0.2;
+
+            // 到达目标
+            if (Math.abs(diff) < 0.0005) {
+                deckGroup.rotation.y = physics.snapTarget;
+                physics.state = 'IDLE';
+                physics.velocity = 0;
+                
+                // 动画结束，确保最后一次高亮更新
+                updateVisuals();
+            }
+            break;
     }
 }
 
-// 计算最近的卡位并开始吸附
-function startSnapping() {
+// 进入吸附状态
+function enterSnap() {
     const count = deckList.length;
-    if (count === 0) return;
     const step = (Math.PI * 2) / count;
     
-    // 当前角度
+    // 当前 rotation
     let currentY = deckGroup.rotation.y;
     
-    // 找到最近的 slot 索引
-    // 注意：旋转是反向的，且卡牌分布在圆周上
-    // Math.round(currentY / step) 算出我们转过了多少张牌
-    const snapIndex = Math.round(currentY / step);
+    // 计算当前应该对齐哪个 index
+    // R = -index * step  => index = -R / step
+    let rawIndex = -currentY / step;
     
-    physics.snapTarget = snapIndex * step;
-    physics.isSnapping = true;
+    // 找到最近的整数 index
+    let targetIndex = Math.round(rawIndex);
+    
+    // 钳制 index 范围 (0 到 21)
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex >= count) targetIndex = count - 1;
+    
+    // 计算目标角度
+    physics.snapTarget = -(targetIndex * step);
+    
+    physics.state = 'SNAPPING';
     physics.velocity = 0;
 }
 
-// 视觉更新：高亮中间的牌
+// 手势专用的“油门”物理逻辑
+function updateHandGesturePhysics(handX) {
+    if (physics.state === 'SNAPPING') return; // 吸附时被打断？也可以
+
+    // HandX: -1 (Left) ~ 1 (Right)
+    // 映射逻辑：
+    // Hand Right (X > 0) -> 牌阵向右滑 (R 变大? 不，向右滑意味着看左边的牌)
+    // 让我们对齐直觉：手往右挥，希望把当前的牌拨走，看左边的？还是希望看右边的？
+    // Prompt: "Hand right area -> array slides right"
+    // 假如“Array slides right”意味着整个3D物体向右移动 -> 也就是顺时针旋转 (Top View) ? 
+    // 其实如果是 Apple Picker，手往右(下)划，列表往右(下)走。
+    // 我们定义：Hand X > 0.2 -> Velocity Positive.
+    
+    const deadzone = 0.2;
+    if (Math.abs(handX) > deadzone) {
+        physics.state = 'DRAGGING'; // 借用状态
+        
+        // 速度由距离中心的程度决定
+        // 越远越快
+        const speedFactor = (Math.abs(handX) - deadzone) * 0.08; 
+        const direction = Math.sign(handX); 
+        
+        // 直接修改 Rotation (像摇杆一样)
+        const move = direction * speedFactor;
+        
+        // 预判边界，防止在边界处无限加速
+        const nextRot = deckGroup.rotation.y + move;
+        if (nextRot <= physics.maxRot && nextRot >= physics.minRot) {
+            deckGroup.rotation.y += move;
+            // 记录速度用于松手后的惯性
+            physics.velocity = move; 
+        } else {
+            physics.velocity = 0;
+        }
+    } else {
+        // 回到中心 deadzone，如果之前在动，现在算 Release
+        if (physics.state === 'DRAGGING') {
+            handleReleaseLogic();
+        }
+    }
+}
+
+// 松手/停止手势后的统一逻辑
+function handleReleaseLogic() {
+    // 检查是否有足够的惯性
+    if (Math.abs(physics.velocity) > physics.minReleaseVel) {
+        physics.state = 'INERTIA';
+    } else {
+        enterSnap(); // 速度太慢，直接吸附
+    }
+}
+
+// 视觉更新：只高亮中线（Index closest to center）
 function updateVisuals() {
     if (!deckList.length) return;
     
@@ -889,31 +1012,28 @@ function updateVisuals() {
     const step = (Math.PI * 2) / count;
     
     // 计算当前正对镜头的牌的索引
-    // 镜头看着 (0,0,-R)，即 theta=0 的位置
-    // 整个组旋转了 rotation.y。
-    // 某个牌的世界角度 = 牌初始角度 + rotation.y
-    // 我们要找 牌世界角度 % 2PI ≈ 0 的那个牌
-    
-    // 反推：Index = -Rotation / Step
-    // 归一化旋转角度到 0~2PI 没必要，直接算 offset
+    // Index = -Rotation / Step
     let rawIndex = -deckGroup.rotation.y / step;
-    let normalizedIndex = Math.round(rawIndex) % count;
-    if (normalizedIndex < 0) normalizedIndex += count;
+    let normalizedIndex = Math.round(rawIndex);
     
-    // 找到中间的牌对象
+    // 边界钳制，防止计算出的 index 超出范围
+    if (normalizedIndex < 0) normalizedIndex = 0;
+    if (normalizedIndex >= count) normalizedIndex = count - 1;
+    
     centerCard = cardObjects[normalizedIndex];
 
     // 遍历所有牌调整亮度
     cardObjects.forEach((card, idx) => {
         if (card.userData.state === 'SELECTED' || card.userData.state === 'REVEALING') return;
 
-        // 默认暗色
-        let targetColor = 0x444444; 
+        // 默认极暗 (Visual Rule: Neighbors dim)
+        let targetColor = 0x333333; 
         
-        // 如果是中间的牌，高亮
+        // 中线高亮
         if (idx === normalizedIndex) {
             targetColor = 0xffffff;
-        }
+        } 
+        // 临近的稍微亮一点点？Prompt说"左右牌快速变暗"，所以保持暗色即可
 
         // 颜色插值 (简单的 lerp)
         const meshBack = card.children[0];
@@ -922,19 +1042,18 @@ function updateVisuals() {
         const currCol = new THREE.Color(card.userData.baseColor);
         const targColObj = new THREE.Color(targetColor);
         
-        currCol.lerp(targColObj, 0.1); // 0.1 是颜色变化的渐变速度
+        currCol.lerp(targColObj, 0.2); // 0.2 响应较快
         
         meshBack.material.color.copy(currCol);
         meshFront.material.color.copy(currCol);
         
-        // 保存当前颜色用于下一帧
         card.userData.baseColor = currCol.getHex();
     });
 }
 
 
 /**
- * INPUT LISTENERS (Refactored for Drag & Inertia)
+ * INPUT LISTENERS (Refactored)
  */
 
 function initMouseListeners() {
@@ -952,7 +1071,7 @@ function initMouseListeners() {
     window.addEventListener('mouseup', (e) => {
         handleDragEnd(e.clientX);
     });
-
+    
     // 保持键盘逻辑不变
     window.addEventListener('keydown', (e) => {
         if(e.code === 'Space') handState = 'FIST'; 
@@ -980,17 +1099,15 @@ function initTouchListeners() {
     }, { passive: false });
 
     container.addEventListener('touchend', (e) => {
-        // touchend 没有 clientX，使用最后记录的位置
         handleDragEnd(physics.lastInputPos);
     });
 }
 
-// 统一的输入处理函数
+// 统一的 Drag 处理 (Phase 1)
 function handleDragStart(x) {
     if (isRitualComplete) return;
     
-    physics.isDragging = true;
-    physics.isSnapping = false;
+    physics.state = 'DRAGGING';
     physics.velocity = 0;
     
     physics.lastInputPos = x;
@@ -998,38 +1115,41 @@ function handleDragStart(x) {
     physics.lastInputTime = Date.now();
     physics.dragStartTime = Date.now();
     
-    handState = 'PINCH'; // 按下视为准备捏合
+    handState = 'PINCH'; 
     updateCursorIcon();
 }
 
 function handleDragMove(x) {
-    if (!physics.isDragging || isRitualComplete) return;
+    if (physics.state !== 'DRAGGING' || isRitualComplete) return;
 
     const now = Date.now();
-    const dt = now - physics.lastInputTime;
     
     // 计算位移差 (px)
     const deltaX = x - physics.lastInputPos;
     
-    // 映射到旋转角度 (灵敏度因子)
-    // 移动端/桌面端统一灵敏度
-    const sensitivity = isMobile ? 0.003 : 0.002; 
+    // 1:1 跟随 (Phase 1)
+    // 检查边界：如果在边界外，施加极大阻力 (模拟撞墙) 或者不允许拖动
+    const nextRot = deckGroup.rotation.y + deltaX * physics.dragSensitivity;
     
-    // 直接跟随 (1:1 Drag)
-    deckGroup.rotation.y += deltaX * sensitivity;
+    // 简单的边界阻力逻辑
+    if (nextRot > physics.maxRot || nextRot < physics.minRot) {
+         // 阻尼系数 0.1，难以拖动
+         deckGroup.rotation.y += deltaX * physics.dragSensitivity * 0.1;
+    } else {
+         deckGroup.rotation.y += deltaX * physics.dragSensitivity;
+    }
     
-    // 计算瞬时速度 (用于松手时的惯性)
-    // 简单的低通滤波，防止抖动
-    const newVel = deltaX * sensitivity; // 每帧的速度
-    physics.velocity = newVel; 
+    // 记录瞬时速度 (用于 Release 判定)
+    physics.velocity = deltaX * physics.dragSensitivity; 
 
     physics.lastInputPos = x;
     physics.lastInputTime = now;
 }
 
+// 松手处理 (Phase 2)
 function handleDragEnd(x) {
-    if (!physics.isDragging) return;
-    physics.isDragging = false;
+    if (physics.state !== 'DRAGGING') return;
+    
     handState = 'OPEN';
     updateCursorIcon();
 
@@ -1037,25 +1157,24 @@ function handleDragEnd(x) {
     const totalMove = Math.abs(x - physics.dragStartPos);
     const totalTime = Date.now() - physics.dragStartTime;
 
-    // 如果移动距离很小，且时间很短 -> 视为点击 (Select)
-    // 只有在没有快速滑动时才能点击
     if (totalMove < 10 && totalTime < 300) {
-        physics.velocity = 0; // 点击时不产生惯性
-        // 触发选中逻辑
+        physics.state = 'IDLE';
+        physics.velocity = 0;
+        // 只有中线的牌可以被点击选中
         if (centerCard && !activeCard) {
+            // 确保 centerCard 是真正对齐的那个 (Snap 状态下)
+            // 如果还在惯性里点击，也允许，但最好是静止时
             selectCard(centerCard);
         }
     } else {
-        // 否则视为松手，物理引擎会自动接管 physics.velocity 进行惯性处理
-        // 如果速度太小，也会在物理循环中被判定为 Snap
+        handleReleaseLogic(); // 进入惯性或吸附
     }
 }
 
 
 /**
- * HAND GESTURE ADAPTER (New Logic)
+ * HAND GESTURE ADAPTER
  */
-// 用于手势的变量
 let lastHandX = 0;
 let handIsTracking = false;
 
@@ -1089,23 +1208,26 @@ function handleInput() {
         return;
     }
 
-    // 1. 运行物理引擎 (旋转)
-    updateCarouselPhysics();
+    // 手势特殊处理 (Joystick 模式)
+    if (controlMode === 'hand' && handIsTracking) {
+        if (handState !== 'PINCH' && handState !== 'FIST' && !activeCard) {
+             // 只有在没做动作时，手的位置控制滚动
+             // 手势坐标是 -1 ~ 1
+             // 使用 lastHandX (最新帧)
+             updateHandGesturePhysics(lastHandX);
+        } else {
+             // 如果正在捏合，停止手势对物理引擎的干预
+             if (physics.state === 'DRAGGING') handleReleaseLogic();
+        }
+    } else {
+        // 鼠标/触屏模式，物理引擎在 DragMove 中驱动，这里只负责 Inertia/Snap 的更新
+        updateCarouselPhysics();
+    }
     
-    // 2. 运行视觉更新 (高亮)
+    // 视觉更新 (高亮)
     updateVisuals();
 
-    // 3. 处理卡牌选中后的逻辑 (Select & Reveal)
-    // 注意：旋转逻辑现在已经剥离到 updateCarouselPhysics 和 Input Listeners 中了
-    // 这里只处理 activeCard 的状态
-
-    // 手势模式下的特殊处理：将手势坐标转换为物理引擎的输入
-    if (controlMode === 'hand' && handIsTracking) {
-         // 这里不直接控制 rotation，而是模拟“推轮子”
-         // 我们使用 handX (来自 mediapipe -1~1) 的变化量
-         // HandX 变化 -> 产生 Delta -> 驱动 Physics
-    }
-
+    // 处理卡牌选中后的逻辑
     if (activeCard) {
         // 选中后的卡牌位置
         const targetZ = isMobile ? -3.5 : -2.2;
@@ -1116,15 +1238,12 @@ function handleInput() {
             activeCard.quaternion.slerp(idleQ, 0.1);
             updateStatusText();
             
-            // 触发翻牌判定
-            // 鼠标模式：空格键 或 长按
-            // 手势模式：握拳
             let shouldReveal = false;
 
             if (controlMode === 'hand' && handState === 'FIST') shouldReveal = true;
             if (controlMode !== 'hand') {
                 if (handState === 'FIST') shouldReveal = true; // 空格键
-                // 长按逻辑 (Mouse/Touch hold)
+                // 长按逻辑
                 if (handState === 'PINCH') {
                      if(!activeCard.userData.revealTimer) activeCard.userData.revealTimer = Date.now();
                      if(Date.now() - activeCard.userData.revealTimer > 500) shouldReveal = true;
@@ -1136,11 +1255,6 @@ function handleInput() {
             if (shouldReveal) {
                 revealCard(activeCard);
             } else if (handState === 'OPEN' && controlMode !== 'hand') {
-                // 鼠标/触摸模式下，如果没长按也没按空格，松开就放回
-                // 但要小心：点击瞬间也会经历 OPEN->PINCH->OPEN
-                // 所以我们只在“非长按”且“非点击瞬间”放回，或者简化为：再次点击放回？
-                // 现在的逻辑：松开手(Open)就放回，除非正在 Reveal。
-                // 为了体验更好，我们可以让它粘滞一会，或者只支持空格/握拳/长按
                 returnCard(activeCard);
             }
         }
@@ -1152,8 +1266,8 @@ function handleInput() {
 function selectCard(card) {
     if (selectionCount >= MAX_SELECTION) return;
     
-    // 只有当转盘比较稳的时候才允许选中，防止误触
-    if (Math.abs(physics.velocity) > 0.05) return;
+    // 必须在静止或极慢时才能选中
+    if (physics.state === 'INERTIA' && Math.abs(physics.velocity) > 0.01) return;
 
     activeCard = card;
     card.userData.state = 'SELECTED';
@@ -1165,6 +1279,8 @@ function returnCard(card) {
     deckGroup.attach(card);
     card.userData.state = 'RETURNING';
     activeCard = null;
+    // 修正返回时的旋转，使其归位到原始theta
+    // 但因为group旋转了，所以相对旋转应该是原始的
 }
 
 function updateReturningCards() {
@@ -1176,14 +1292,18 @@ function updateReturningCards() {
                 -RADIUS * Math.cos(card.userData.theta)
             );
             card.position.lerp(targetPos, 0.08); 
+            
+            // 计算朝向圆心的四元数
             const dummy = new THREE.Object3D();
-            dummy.position.copy(card.position);
+            dummy.position.copy(targetPos); // 目标位置
             dummy.lookAt(0,0,0);
+            
             card.quaternion.slerp(dummy.quaternion, 0.08);
+            
             if (card.position.distanceTo(targetPos) < 0.05) {
                 card.userData.state = 'IDLE';
                 card.position.copy(targetPos);
-                card.lookAt(0,0,0);
+                card.quaternion.copy(dummy.quaternion);
             }
         }
     });
@@ -1491,36 +1611,14 @@ function initCamera() {
             const lm = res.multiHandLandmarks[0];
             handIsTracking = true;
             
-            // Hand Gesture Physics Adapter
-            // 我们用手掌 X 坐标的变化率来驱动 physics.velocity
-            const currentHandX = (1 - lm[8].x) * 2 - 1; // 镜像翻转
-            
-            if (handState !== 'PINCH' && handState !== 'FIST') {
-                // 如果没有在做特殊手势，则视为拖拽
-                if (Math.abs(currentHandX - lastHandX) > 0.005) { // 过滤微小抖动
-                    physics.isDragging = true;
-                    // 模拟 handleDragMove
-                    // 这里的 scale 需要调教
-                    const delta = (currentHandX - lastHandX) * 0.1; 
-                    deckGroup.rotation.y += delta;
-                    physics.velocity = delta;
-                    physics.isSnapping = false;
-                } else {
-                    physics.isDragging = false;
-                }
-            } else {
-                // 捏合或握拳时，停止旋转，让物理引擎接管(或停止)
-                physics.isDragging = false;
-            }
-            lastHandX = currentHandX;
+            // 获取 X 轴位置，用于 Joystick 逻辑
+            lastHandX = (1 - lm[8].x) * 2 - 1; // 镜像翻转
 
             const pinch = Math.hypot(lm[8].x-lm[4].x, lm[8].y-lm[4].y);
             const fist = lm[12].y>lm[9].y && lm[16].y>lm[13].y;
             
-            // 捏合判定：如果正在选中，保持选中，否则看距离
+            // 捏合判定
             if (activeCard) {
-                // 如果已经选中了，只要不松手(OPEN)，就保持选中状态
-                // 这样可以防止抖动导致掉落
                 if (pinch > 0.1 && !fist) handState = 'OPEN';
                 else if (fist) handState = 'FIST';
                 else handState = 'PINCH';
@@ -1538,7 +1636,6 @@ function initCamera() {
             }
         } else {
             handIsTracking = false;
-            physics.isDragging = false;
         }
     });
     const cam = new Camera(videoElem, {onFrame: async()=>{await hands.send({image:videoElem})}, width:320, height:240});
