@@ -1115,9 +1115,8 @@ function snapToGrid() {
     // 3. 算出那个卡位的标准角度
     const targetRotation = closestIndex * step;
 
-    // 4. 强制赋值（瞬移，不做动画，确立规则）
+    // 4.系统会认为“原本就应该转到这里”，然后通过 lerp 慢慢滑过去
     ringRotation = targetRotation;
-    deckGroup.rotation.y = targetRotation;
     
     // 5. 再次强制更新一下中轴卡，确保数据同步
     centerCard = getAxisCard();
