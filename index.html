@@ -232,26 +232,26 @@
 #axis-markers::before {
     content: '';
     position: absolute;
-    top: 12%; /* 距离顶部的位置，避开卡牌区域 */
+    top: 20%; /* 距离顶部的位置，避开卡牌区域 */
     left: 50%;
     transform: translateX(-50%);
     
     /* 形状：细长菱形或针尖 */
     width: 1px;
     height: 30px; 
-    background: linear-gradient(to bottom, transparent, #d4af37);
+    background: linear-gradient(to bottom, transparent, #ccd437);
 }
 /* 上指针的装饰点 (12点钟刻度感) */
 #axis-markers::after {
     content: '';
     position: absolute;
-    top: calc(12% + 35px); /* 在线条下方一点 */
+    top: calc(20% + 35px); /* 在线条下方一点 */
     left: 50%;
     transform: translateX(-50%) rotate(45deg);
     
     width: 4px;
     height: 4px;
-    border: 1px solid #d4af37;
+    border: 1px solid #ccd437;
     background: transparent;
     opacity: 0.6;
 }
@@ -260,7 +260,7 @@
 /* 为了代码整洁，我们用一个子元素来做下指针 */
 .bottom-marker {
     position: absolute;
-    bottom: 15%; /* 距离底部的位置 */
+    bottom: 20%; /* 距离底部的位置 */
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
@@ -276,7 +276,7 @@
     
     width: 1px;
     height: 30px; 
-    background: linear-gradient(to top, transparent, #d4af37);
+    background: linear-gradient(to top, transparent, #ccd437);
 }
 
 .bottom-marker::after {
@@ -288,7 +288,7 @@
     
     width: 4px;
     height: 4px;
-    border: 1px solid #d4af37;
+    border: 1px solid #ccd437;
     background: transparent;
     opacity: 0.6;
 }
@@ -712,6 +712,7 @@ let selectionCount = 0;
 let isRitualComplete = false;
 let chosen3DMeshes = [];
 
+
 const RADIUS = 10;
 const CARD_W = 1.5;
 const CARD_H = 2.58;
@@ -865,12 +866,13 @@ function createCardMesh(data, index, total) {
     const meshFiller = new THREE.Mesh(faceGeo, edgeMat);
     meshFiller.scale.set(0.995, 0.995, 1);
     
-    // 取消高光 outline
-    // const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
-    // outlineMesh.position.z = 0.006; outlineMesh.visible = false;
-    // group.userData.outline = outlineMesh;
+    // 恢复高光线框 (Outline)，用于标记“中轴卡”
+    const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
+    outlineMesh.position.z = 0.006; 
+    outlineMesh.visible = false; // 默认隐藏
+    group.userData.outline = outlineMesh; // 存入 userData 方便后续调用
 
-    group.add(meshBack, meshFront, meshFiller);
+    group.add(meshBack, meshFront, meshFiller, outlineMesh);
     
     const step = (Math.PI * 2) / total;
     const theta = index * step;
@@ -986,6 +988,41 @@ function updateStatusText() {
     }
 }
 
+// --- 定义：核心中轴计算逻辑 ---
+function getAxisCard() {
+    let closestCard = null;
+    let minAbsX = Infinity; // 初始设为无穷大
+
+    cardObjects.forEach(card => {
+        // 1. 排除条件：已经被选中、正在翻开、或已飞走的卡，不参与中轴竞争
+        if (card.userData.state !== 'IDLE' || card.userData.isChosen) {
+            // 如果它之前有高光，关掉
+            if (card.userData.outline) card.userData.outline.visible = false;
+            return;
+        }
+
+        // 2. 获取世界坐标 X (即距离屏幕垂直中轴线的水平距离)
+        // 注意：这里不需要算 Z 轴距离，只看谁最“正”
+        const worldPos = new THREE.Vector3();
+        card.getWorldPosition(worldPos);
+
+        // 3. 核心比较：找绝对值最小的 X
+        // 只要没飞出屏幕太远（比如背后），都参与比较
+        // 这里加一个宽泛的 limit (例如 x < 5) 只是为了防止背面的卡干扰，
+        // 但其实只算 Z < 0 (相机前方) 即可。
+        if (worldPos.z < 0) { // 确保是位于相机前方的卡（根据你的场景坐标系，卡组在负Z轴）
+            const absX = Math.abs(worldPos.x);
+            if (absX < minAbsX) {
+                minAbsX = absX;
+                closestCard = card;
+            }
+        }
+    });
+
+    return closestCard;
+}
+
+// --- 修改后的输入处理与状态更新 ---
 function handleInput() {
     if (!isStarted) return;
     if (isRitualComplete) {
@@ -993,42 +1030,48 @@ function handleInput() {
         return;
     }
 
+    // 1. 转动逻辑 (保持不变)
     if (!activeCard && handState === 'OPEN') {
         const deadZone = 0.15;
-        // 移动端灵敏度调整
         const speed = isMobile ? 0.015 : 0.02;
         if (Math.abs(handX) > deadZone) ringRotation += (handX - Math.sign(handX)*deadZone) * speed;
     }
     deckGroup.rotation.y = THREE.MathUtils.lerp(deckGroup.rotation.y, ringRotation, 0.05);
 
-    let closestDist = Infinity;
-    let newCenterCard = null;
-    if (!activeCard) {
-        cardObjects.forEach(card => {
-            if (card.userData.state === 'IDLE' && !card.userData.isChosen) {
-                const worldPos = new THREE.Vector3();
-                card.getWorldPosition(worldPos);
-                // 移动端判定范围放宽
-                if (worldPos.z < -RADIUS + 2.5 && Math.abs(worldPos.x) < (isMobile ? 2.0 : 1.5)) {
-                    const dist = worldPos.distanceTo(camera.position);
-                    if (dist < closestDist) { closestDist = dist; newCenterCard = card; }
-                }
-            }
-            if (card.userData.outline) card.userData.outline.visible = false;
-        });
-    }
+    // 2. --- 新增：每一帧都重新定义“中轴卡” ---
+    const newAxisCard = getAxisCard();
 
-    if (newCenterCard) {
-        centerCard = newCenterCard;
+    // 清理旧状态：先把所有卡的高光关掉
+    cardObjects.forEach(c => {
+        if(c.userData.outline) c.userData.outline.visible = false;
+    });
+
+    // 赋值新状态
+    centerCard = newAxisCard; 
+
+    // 3. 验收逻辑：视觉反馈与裁判输出
+    const debugEl = document.getElementById('debug-axis-info');
+    if (centerCard) {
+        // 高亮中轴卡
         if (centerCard.userData.outline) centerCard.userData.outline.visible = true;
+        
+        // 裁判输出名字
+        const name = centerCard.userData.rawData[currentLang].name;
+        debugEl.innerText = `AXIS: [ ${name} ] DX:${Math.abs(centerCard.position.x).toFixed(3)}`;
+        debugEl.style.color = '#00ff00'; // 绿色表示锁定
     } else {
-        centerCard = null;
+        debugEl.innerText = "AXIS: SEARCHING...";
+        debugEl.style.color = '#ffff00';
     }
 
-    if (handState === 'PINCH' && centerCard && !activeCard) selectCard(centerCard);
+    // 4. 交互触发逻辑 (选中)
+    // 只有当 centerCard 被明确定义，且用户做出捏合手势时才触发
+    if (handState === 'PINCH' && centerCard && !activeCard) {
+        selectCard(centerCard);
+    }
 
+    // 5. 处理已选中卡牌的移动 (保持不变)
     if (activeCard) {
-        // 选中后的卡牌位置
         const targetZ = isMobile ? -3.5 : -2.2;
         activeCard.position.lerp(new THREE.Vector3(0, 0, targetZ), 0.1);
         
