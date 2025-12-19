@@ -260,7 +260,7 @@
 /* 为了代码整洁，我们用一个子元素来做下指针 */
 .bottom-marker {
     position: absolute;
-    bottom: 20%; /* 距离底部的位置 */
+    bottom: 12%; /* 距离底部的位置 */
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
@@ -270,7 +270,7 @@
 .bottom-marker::before {
     content: '';
     position: absolute;
-    bottom: 0;
+    bottom: 20%;
     left: 50%;
     transform: translateX(-50%);
     
@@ -282,7 +282,7 @@
 .bottom-marker::after {
     content: '';
     position: absolute;
-    bottom: 35px; /* 在线条上方一点 */
+    bottom: calc(20% + 35px); /* 在线条上方一点 */
     left: 50%;
     transform: translateX(-50%) rotate(45deg);
     
@@ -556,19 +556,8 @@
         <div id="axis-markers">
             <div class="bottom-marker"></div>
         </div>
-        <div id="debug-axis-info" style="
-            position: absolute; 
-            top: 15%; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            color: #00ff00; 
-            font-size: 14px; 
-            font-family: monospace; 
-            pointer-events: none; 
-            z-index: 100;
-            text-shadow: 0 0 2px #000;
+        <div id="debug-axis-info" style=";
         ">
-            AXIS: -
         </div>
 
         <div id="history-container"></div>
@@ -881,12 +870,12 @@ function createCardMesh(data, index, total) {
     meshFiller.scale.set(0.995, 0.995, 1);
     
     // 恢复高光线框 (Outline)，用于标记“中轴卡”
-    const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
-    outlineMesh.position.z = 0.006; 
-    outlineMesh.visible = false; // 默认隐藏
-    group.userData.outline = outlineMesh; // 存入 userData 方便后续调用
+    //const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
+    //outlineMesh.position.z = 0.006; 
+    //outlineMesh.visible = false; // 默认隐藏
+    //group.userData.outline = outlineMesh; // 存入 userData 方便后续调用
 
-    group.add(meshBack, meshFront, meshFiller, outlineMesh);
+    group.add(meshBack, meshFront, meshFiller);
     
     const step = (Math.PI * 2) / total;
     const theta = index * step;
@@ -1044,7 +1033,7 @@ function handleInput() {
         return;
     }
 
-    // 1. 转动逻辑 (保持不变)
+    // 1. 转动逻辑
     if (!activeCard && handState === 'OPEN') {
         const deadZone = 0.15;
         const speed = isMobile ? 0.015 : 0.02;
@@ -1052,39 +1041,22 @@ function handleInput() {
     }
     deckGroup.rotation.y = THREE.MathUtils.lerp(deckGroup.rotation.y, ringRotation, 0.05);
 
-    // 2. --- 新增：每一帧都重新定义“中轴卡” ---
+    // 2. 核心：依然计算中轴卡，但是"默默地算"
     const newAxisCard = getAxisCard();
 
-    // 清理旧状态：先把所有卡的高光关掉
-    cardObjects.forEach(c => {
-        if(c.userData.outline) c.userData.outline.visible = false;
-    });
-
-    // 赋值新状态
+    // 赋值给全局变量，这样后续捏合的时候知道选谁
     centerCard = newAxisCard; 
 
-    // 3. 验收逻辑：视觉反馈与裁判输出
-    const debugEl = document.getElementById('debug-axis-info');
-    if (centerCard) {
-        // 高亮中轴卡
-        if (centerCard.userData.outline) centerCard.userData.outline.visible = true;
-        
-        // 裁判输出名字
-        const name = centerCard.userData.rawData[currentLang].name;
-        debugEl.innerText = `AXIS: [ ${name} ] DX:${Math.abs(centerCard.position.x).toFixed(3)}`;
-        debugEl.style.color = '#00ff00'; // 绿色表示锁定
-    } else {
-        debugEl.innerText = "AXIS: SEARCHING...";
-        debugEl.style.color = '#ffff00';
-    }
+    // ❌ 删除了 debugEl 名字显示
+    // ❌ 删除了 outline.visible 高光控制
 
-    // 4. 交互触发逻辑 (选中)
-    // 只有当 centerCard 被明确定义，且用户做出捏合手势时才触发
+    // 3. 交互触发逻辑 (选中)
+    // 只有当系统锁定了 centerCard，且用户做出捏合手势时才触发
     if (handState === 'PINCH' && centerCard && !activeCard) {
         selectCard(centerCard);
     }
 
-    // 5. 处理已选中卡牌的移动 (保持不变)
+    // 4. 处理已选中卡牌的移动
     if (activeCard) {
         const targetZ = isMobile ? -3.5 : -2.2;
         activeCard.position.lerp(new THREE.Vector3(0, 0, targetZ), 0.1);
@@ -1108,7 +1080,6 @@ function handleInput() {
         updateStatusText();
     }
 }
-
 function selectCard(card) {
     if (selectionCount >= MAX_SELECTION) return;
     activeCard = card;
