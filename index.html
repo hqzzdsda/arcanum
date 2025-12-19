@@ -209,44 +209,90 @@
             color: #d4af37; 
             opacity: 0; 
             transition: opacity 1.5s; 
-            /* --- 新增：正中停靠框 (Target Frame) --- */
-/* --- 新增：正中停靠框 (Target Frame) --- */
-#target-frame {
+            /* --- 新增：中轴指针 (Axis Markers) --- */
+            #axis-markers {
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 50%;
-    /* 核心：绝对居中 */
-    transform: translate(-50%, -50%);
+    /* 居中自身 */
+    transform: translateX(-50%);
     
-    /* 尺寸：根据你的卡牌 1.5 : 2.58 的比例设定 
-       你可以根据屏幕实际渲染大小微调这里的 px 值 */
-    width: 200px; 
-    height: 344px; 
+    width: 2px; /* 极细的中轴线容器 */
+    height: 100%;
     
-    /* 视觉样式：淡金色细边框，不干扰视线 */
-    border: 1px solid rgba(212, 175, 55, 0.25); 
-    border-radius: 6px; /* 对应卡牌圆角 */
-    
-    /* 增加一点内发光，让它看起来像个高科技/魔法瞄准具 */
-    box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.05), 
-                0 0 10px rgba(0,0,0, 0.5);
-    
-    z-index: 10; /* 在 Canvas 之上，但在按钮之下 */
-    pointer-events: none; /* ⚠️ 关键：让鼠标点击能穿透它，不影响操作 */
-    
-    /* 可选：加个十字准星增强定位感 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    /* ⚠️ 核心层级控制：
+       虽然 Z-index 比 Canvas 高，但通过透明度和混合模式，
+       让它表现得像是在“背景”里，不会遮挡卡牌内容 */
+    z-index: 5; 
+    pointer-events: none; /* 绝对穿透 */
+    opacity: 0.4; /* 低对比度，似有若无 */
 }
 
-/* 可选：简单的中心十字准星 */
-#target-frame::after {
-    content: '+';
-    color: rgba(212, 175, 55, 0.3);
-    font-size: 20px;
-    font-weight: 100;
+/* 上指针 (Top Pointer) */
+#axis-markers::before {
+    content: '';
+    position: absolute;
+    top: 12%; /* 距离顶部的位置，避开卡牌区域 */
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* 形状：细长菱形或针尖 */
+    width: 1px;
+    height: 30px; 
+    background: linear-gradient(to bottom, transparent, #d4af37);
 }
+/* 上指针的装饰点 (12点钟刻度感) */
+#axis-markers::after {
+    content: '';
+    position: absolute;
+    top: calc(12% + 35px); /* 在线条下方一点 */
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    
+    width: 4px;
+    height: 4px;
+    border: 1px solid #d4af37;
+    background: transparent;
+    opacity: 0.6;
+}
+
+/* 下指针 (Bottom Pointer) */
+/* 为了代码整洁，我们用一个子元素来做下指针 */
+.bottom-marker {
+    position: absolute;
+    bottom: 15%; /* 距离底部的位置 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+}
+
+.bottom-marker::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    width: 1px;
+    height: 30px; 
+    background: linear-gradient(to top, transparent, #d4af37);
+}
+
+.bottom-marker::after {
+    content: '';
+    position: absolute;
+    bottom: 35px; /* 在线条上方一点 */
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    
+    width: 4px;
+    height: 4px;
+    border: 1px solid #d4af37;
+    background: transparent;
+    opacity: 0.6;
+}
+
         }
         
         /* 历史记录栏 */
@@ -438,8 +484,9 @@
             .options-grid { grid-template-columns: 1fr; gap: 30px; margin-bottom: 30px; }
             .choice-btn { padding: 10px 0; width: 200px; }
             #enter-btn { padding: 15px 60px; font-size: 14px; }
-            /* 移动端缩小框体 */
-            #target-frame { width: 160px; height: 275px; }
+            #axis-markers::before { top: 15%; }
+            #axis-markers::after { top: calc(15% + 35px); }
+            .bottom-marker { bottom: 20%; }
             
             /* 移动端历史记录置顶居中 */
             #history-container {
@@ -506,10 +553,14 @@
     </div>
 
     <div id="ui-layer">
+        <div id="axis-markers">
+            <div class="bottom-marker"></div>
+        </div>
+
         <div id="history-container"></div>
-        <div id="target-frame"></div>
         <div id="final-text-container"></div>
-        
+
+
         <div id="oracle-overlay"></div>
 
         <div id="end-ui">
