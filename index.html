@@ -239,6 +239,7 @@ body.is-grabbing {
     z-index: 5; 
     pointer-events: none; /* 绝对穿透 */
     opacity: 0.4; /* 低对比度，似有若无 */
+    transition: opacity 0.5s ease; /* ✅ 加这行 */
 }
 
 /* 上指针 (Top Pointer) */
@@ -361,6 +362,8 @@ body.is-grabbing {
             width: 100%;
             background: transparent;
             border-radius: 0;
+            opacity: 1; /* 默认不透明 */
+            transition: opacity 0.5s ease; /* ✅ 加这行 */
         }
 
         /* 按下时的反馈 */
@@ -540,6 +543,10 @@ body.is-grabbing {
             
             /* 解说文字在手机上小一点 */
             #oracle-overlay { font-size: 14px; width: 90%; }
+        }
+        .ui-hidden {
+            opacity: 0 !important;
+            pointer-events: none !important; /* 强烈建议加上这行：隐藏的同时禁止点击 */
         }
     </style>
     
@@ -1904,34 +1911,25 @@ function updateCardVisuals() {
     });
 }
 
-// --- 新增：UI 显隐状态管理 ---
+// --- 修改后：基于 CSS 类的 UI 状态管理 ---
 function updateUIVisibility() {
     const axis = document.getElementById('axis-markers');
     const hud = document.getElementById('hud-center');
     
-    // 判定条件：什么时候应该“清场”？
-    // 1. 仪式彻底结束了 (isRitualComplete) -> 必须隐藏
-    // 2. 手里有卡 (activeCard) -> 无论是被选中、正在翻、还是正在弹回，都隐藏，避免干扰
-    // 3. 正在冷却 (isCoolingDown) -> 隐藏，让画面过渡更干净
+    // 判定隐藏条件：
+    // 1. 仪式结束 (isRitualComplete)
+    // 2. 有卡正在被操作 (activeCard !== null) -> 无论是选中、翻转、还是弹回
+    // 3. 正在冷却 (isCoolingDown) -> 还没完全归位
     const shouldHide = isRitualComplete || activeCard !== null || isCoolingDown;
 
     if (shouldHide) {
-        // 隐藏状态
-        axis.style.opacity = 0;
-        hud.style.opacity = 0;
-        
-        // 关键：隐藏时禁止点击，防止误触看不到的按钮
-        hud.style.pointerEvents = 'none'; 
+        axis.classList.add('ui-hidden');
+        hud.classList.add('ui-hidden');
     } else {
-        // 显示状态
-        axis.style.opacity = 0.4; // 中轴线默认是半透明的 (0.4)
-        hud.style.opacity = 1;    // 底部图标是完全不透明的 (1.0)
-        
-        // 逻辑恢复：只有移动端才允许点击 HUD，电脑端不允许
-        hud.style.pointerEvents = isMobile ? 'auto' : 'none'; 
+        axis.classList.remove('ui-hidden');
+        hud.classList.remove('ui-hidden');
     }
 }
-
 window.onresize = updateCameraPos;
 </script>
 </body>
