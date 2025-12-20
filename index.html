@@ -239,7 +239,7 @@ body.is-grabbing {
     z-index: 5; 
     pointer-events: none; /* 绝对穿透 */
     opacity: 0.4; /* 低对比度，似有若无 */
-    transition: opacity 0.5s ease; /* ✅ 加这行 */
+    transition: opacity 0.6s ease-out; /* ✅ 关键：慢一点的淡出，不抢戏 */
 }
 
 /* 上指针 (Top Pointer) */
@@ -363,7 +363,7 @@ body.is-grabbing {
             background: transparent;
             border-radius: 0;
             opacity: 1; /* 默认不透明 */
-            transition: opacity 0.5s ease; /* ✅ 加这行 */
+            transition: opacity 0.6s ease-out; /* ✅ 关键：慢一点的淡出 */
         }
 
         /* 按下时的反馈 */
@@ -544,9 +544,11 @@ body.is-grabbing {
             /* 解说文字在手机上小一点 */
             #oracle-overlay { font-size: 14px; width: 90%; }
         }
-        .ui-hidden {
-            opacity: 0 !important;
-            pointer-events: none !important; /* 强烈建议加上这行：隐藏的同时禁止点击 */
+        /* 2. 定义“隐身”状态 */
+        /* !important 确保覆盖原有的 opacity 设置 */
+        .ui-faded-out {
+        opacity: 0 !important;
+        pointer-events: none !important; /* 隐藏时绝对不可点击 */
         }
     </style>
     
@@ -1912,22 +1914,25 @@ function updateCardVisuals() {
 }
 
 // --- 修改后：基于 CSS 类的 UI 状态管理 ---
+// --- Step 8.x: 中轴与提示图标的显隐管理 ---
 function updateUIVisibility() {
     const axis = document.getElementById('axis-markers');
     const hud = document.getElementById('hud-center');
     
-    // 判定隐藏条件：
-    // 1. 仪式结束 (isRitualComplete)
-    // 2. 有卡正在被操作 (activeCard !== null) -> 无论是选中、翻转、还是弹回
-    // 3. 正在冷却 (isCoolingDown) -> 还没完全归位
-    const shouldHide = isRitualComplete || activeCard !== null || isCoolingDown;
+    // 🔍 判定逻辑：
+    // 只要有任何“动作”发生，或者处于“冷却”中，或者“结束”了
+    // 辅助元素就应该退场
+    const shouldHide = activeCard !== null || isCoolingDown || isRitualComplete;
 
     if (shouldHide) {
-        axis.classList.add('ui-hidden');
-        hud.classList.add('ui-hidden');
+        // 进入“隐身”状态
+        axis.classList.add('ui-faded-out');
+        hud.classList.add('ui-faded-out');
     } else {
-        axis.classList.remove('ui-hidden');
-        hud.classList.remove('ui-hidden');
+        // 恢复“可见”状态
+        // 只有当：没选卡 + 没冷却 + 没结束 时，才会显示
+        axis.classList.remove('ui-faded-out');
+        hud.classList.remove('ui-faded-out');
     }
 }
 window.onresize = updateCameraPos;
