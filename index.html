@@ -1224,34 +1224,42 @@ function updateStatusText() {
 }
 
 // --- 定义：核心中轴计算逻辑 ---
+// --- 修改后：带冻结逻辑的中轴判定 ---
 function getAxisCard() {
+    // 🛑 冻结逻辑 (Step 8.1)
+    // 如果当前有“主角卡” (选中、下拉中、或正在归位)
+    // 直接锁定它为中轴卡，不再计算距离
+    // 这样即使卡片被拉到屏幕边缘，系统依然认为它是“中心”
+    if (activeCard) {
+        // 确保它不高亮轮廓（我们用光影材质来做高亮，不用 LineSegments）
+        if (activeCard.userData.outline) activeCard.userData.outline.visible = false;
+        return activeCard;
+    }
+
+    // --- 以下是常规逻辑 (只有没选中卡时才运行) ---
+    
     let closestCard = null;
-    let minAbsX = Infinity; // 初始设为无穷大
+    let minAbsX = Infinity; 
 
     cardObjects.forEach(card => {
-        // 1. 排除条件：已经被选中、正在翻开、或已飞走的卡，不参与中轴竞争
-        if (card.userData.state !== 'IDLE' || card.userData.isChosen) {
-            // 如果它之前有高光，关掉
-            if (card.userData.outline) card.userData.outline.visible = false;
-            return;
-        }
+        // 排除已选中的（虽然上面已经拦截了 activeCard，但为了防止飞走的卡干扰，保留此判断）
+        if (card.userData.isChosen) return;
 
-        // 2. 获取世界坐标 X (即距离屏幕垂直中轴线的水平距离)
-        // 注意：这里不需要算 Z 轴距离，只看谁最“正”
+        // 获取世界坐标 X
         const worldPos = new THREE.Vector3();
         card.getWorldPosition(worldPos);
 
-        // 3. 核心比较：找绝对值最小的 X
-        // 只要没飞出屏幕太远（比如背后），都参与比较
-        // 这里加一个宽泛的 limit (例如 x < 5) 只是为了防止背面的卡干扰，
-        // 但其实只算 Z < 0 (相机前方) 即可。
-        if (worldPos.z < 0) { // 确保是位于相机前方的卡（根据你的场景坐标系，卡组在负Z轴）
+        // 只看相机前方的卡
+        if (worldPos.z < 0) { 
             const absX = Math.abs(worldPos.x);
             if (absX < minAbsX) {
                 minAbsX = absX;
                 closestCard = card;
             }
         }
+        
+        // 确保平时没有 outline
+        if (card.userData.outline) card.userData.outline.visible = false;
     });
 
     return closestCard;
