@@ -1104,7 +1104,7 @@ function updatePullingVisuals(card, progress) {
     
     // 100% 的位置 (眼前确认位)
     const endZ = isMobile ? -3.5 : -2.2;
-    const endY = -1.5; // 拉到屏幕下方一点
+    const endY = -0.5; // 拉到屏幕下方一点
     
     // 插值计算
     const currentZ = THREE.MathUtils.lerp(startZ, endZ, progress);
@@ -1586,7 +1586,7 @@ function startEndRitual() {
 
         // 响应式最终位置计算
         const isPortrait = window.innerHeight > window.innerWidth;
-        const gap = isPortrait ? 1.8 : 2.7;      
+        const gap = isPortrait ? 1.8 : 2.2;      
         const depth = isPortrait ? -7.0 : -6.0; 
         const targetY = isPortrait ? 3.0 : 0;
         
@@ -1929,4 +1929,3 @@ window.onresize = updateCameraPos;
 </script>
 </body>
 </html>
-
