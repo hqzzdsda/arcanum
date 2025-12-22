@@ -223,7 +223,7 @@ body.is-grabbing {
     align-items: center;
     opacity: 0;
     transition: opacity 1.0s;
-    backdrop-filter: blur(2px); /* 轻微模糊背景星空 */
+    backdrop-filter: blur(0px); /* 轻微模糊背景星空 */
 }
 
 /* 磨砂玻璃卡片 */
@@ -234,7 +234,7 @@ body.is-grabbing {
     background: rgba(10, 10, 10, 0.6); /* 深色半透明底 */
     border: 1px solid rgba(212, 175, 55, 0.2); /* 极淡的金边 */
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-    border-radius: 4px; /*稍微圆角，不要太圆 */
+    border-radius: 6px; /*稍微圆角，不要太圆 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1353,7 +1353,7 @@ function updatePullingVisuals(card, progress) {
     const startY = 0;
     
     // 100% 的位置 (眼前确认位)
-    const endZ = isMobile ? -2.5 : -2.2;
+    const endZ = isMobile ? -1.8 : -1.5;
     const endY = 0; // 拉到屏幕下方一点
     
     // 插值计算
