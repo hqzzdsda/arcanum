@@ -233,6 +233,14 @@ body.is-grabbing {
     max-width: 500px;
 }
 
+/* 确保提问标题居中 */
+#input-prompt {
+    text-align: center;  /* 关键：文字水平居中 */
+    width: 100%;         /* 确保占满容器宽度 */
+    margin-bottom: 20px; /* 标题和输入框之间的距离 */
+    line-height: 1.4;    /* 防止多行文字挤在一起 */
+}
+
 #user-question {
     width: 100%;
     background: rgba(0, 0, 0, 0.5);
@@ -880,7 +888,7 @@ function enterExperience() {
     screen.style.pointerEvents = 'none';
     setTimeout(() => { screen.style.display = 'none'; }, 1000);
 
-    // 2. 初始化输入设备 (摄像头/鼠标) - 提前初始化以免等待
+    // 2. 初始化输入设备 (提前准备好，但不开始游戏)
     if (controlMode === 'hand') {
         document.getElementById('video-feed').style.opacity = 0.3;
         initCamera();
@@ -890,47 +898,50 @@ function enterExperience() {
     }
     updateCameraPos();
 
-    // 3. [新增] 显示提问页
+    // 3. 显示提问页
     const inputScreen = document.getElementById('input-screen');
     inputScreen.style.display = 'flex';
     
-    // 更新提问页的文字语言
+    // 更新文案
     const t = TEXTS[currentLang];
     document.getElementById('input-prompt').innerText = t.inputPrompt;
     document.getElementById('user-question').placeholder = t.inputPlaceholder;
     document.getElementById('confirm-question-btn').innerText = t.btnBegin;
 
-    // 延时显示 opacity 动画
+    // 显现动画
     setTimeout(() => {
         inputScreen.style.opacity = 1;
-        document.getElementById('user-question').focus(); // 自动聚焦输入框
+        document.getElementById('user-question').focus();
     }, 100);
+
+    // ❌ 重点检查：这里绝对不能有 isStarted = true
+    // ❌ 重点检查：这里绝对不能有 spawnDeck()
+    // ❌ 重点检查：这里绝对不能有 toggleGuides(true)
 }
 
 function submitQuestion() {
     const inputField = document.getElementById('user-question');
     const val = inputField.value.trim();
     
-    // 如果没填问题，给个默认值
+    // 1. 获取问题（如果没填给默认值）
     userQuestionText = val || (currentLang === 'zh' ? "我的命运指引" : "My general destiny");
 
-    // 1. 隐藏提问页
+    // 2. 隐藏提问页
     const inputScreen = document.getElementById('input-screen');
     inputScreen.style.opacity = 0;
+    // 这里的延时必须和CSS transition一致，等消失动画播完再隐藏DOM
     setTimeout(() => { inputScreen.style.display = 'none'; }, 1000);
 
-    // 2. 正式开始仪式 (原 enterExperience 的后半部分)
-    isStarted = true;
+    // 3. ✅ 正式启动游戏逻辑
+    isStarted = true;           // 开启物理循环
+    
     const ui = document.getElementById('ui-layer');
     ui.style.opacity = 1;
     
-    updateStatusText();
-    spawnDeck(); // 生成卡牌
-    
-    // 显示指引 (这是刚才加上去的那个功能)
-    if (typeof toggleGuides === 'function') toggleGuides(true);
+    updateStatusText();         // 更新顶部提示
+    spawnDeck();                // ✅ 只有在这里才生成卡牌！
+    toggleGuides(true);
 }
-
 /**
  * THREE.JS SCENE SETUP
  */
