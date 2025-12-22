@@ -1637,8 +1637,16 @@ function handleInput() {
         else {
             // 1. 基础动画：飞到眼前
             const targetZ = isMobile ? -3.5 : -2.2;
-            activeCard.position.lerp(new THREE.Vector3(0, 0, targetZ), 0.1);
-            activeCard.position.y = THREE.MathUtils.lerp(activeCard.position.y, 0, 0.1);
+            // 🔴 [修改这里] 移动端高度修正
+            // 0 = 世界中心 (移动端看起来偏下)
+            // 0.8 = 稍微抬高 (移动端看起来居中)
+            // 你可以根据感觉调整这个数字 (0.5 ~ 1.2)
+            const targetY = isMobile ? 0.8 : 0; 
+
+            // 使用新的 targetY 进行插值移动
+            activeCard.position.lerp(new THREE.Vector3(0, targetY, targetZ), 0.1);
+            //activeCard.position.lerp(new THREE.Vector3(0, 0, targetZ), 0.1);
+            //activeCard.position.y = THREE.MathUtils.lerp(activeCard.position.y, 0, 0.1);
             
             if (activeCard.userData.state === 'SELECTED') {
                 const idleQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
@@ -1906,7 +1914,7 @@ function startEndRitual() {
 
         // 响应式最终位置计算
         const isPortrait = window.innerHeight > window.innerWidth;
-        const gap = isPortrait ? 1.8 : 2.2;      
+        const gap = isPortrait ? 1.8 : 3.5;      
         const depth = isPortrait ? -7.0 : -6.0; 
         const targetY = isPortrait ? 3.0 : 0;
         
@@ -1972,7 +1980,7 @@ async function enterStarryVoid() {
             // 🔴 调试模式：弹出错误警告
             if (DEBUG_MODE) {
                 // 提示用户安装插件
-                alert(`API 调用失败: ${e.message}\n\n【解决方案】\nDeepSeek API 在浏览器直接调用时会被拦截 (CORS Error)。\n请确保代理 URL 有效。`);
+                alert(`API 调用失败: ${e.message}\n\n【解决方案】\nAPI 在浏览器直接调用时会被拦截 (CORS Error)。\n请确保代理 URL 有效。`);
             }
             
             // 失败则降级到本地文案
