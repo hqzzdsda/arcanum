@@ -888,7 +888,7 @@ function enterExperience() {
     screen.style.pointerEvents = 'none';
     setTimeout(() => { screen.style.display = 'none'; }, 1000);
 
-    // 2. 初始化输入设备 (提前准备好，但不开始游戏)
+    // 2. 初始化输入设备 (摄像头/鼠标) - 提前初始化以免等待
     if (controlMode === 'hand') {
         document.getElementById('video-feed').style.opacity = 0.3;
         initCamera();
@@ -898,66 +898,45 @@ function enterExperience() {
     }
     updateCameraPos();
 
-    // 3. 显示提问页
+    // 3. [新增] 显示提问页
     const inputScreen = document.getElementById('input-screen');
     inputScreen.style.display = 'flex';
     
-    // 更新文案
+    // 更新提问页的文字语言
     const t = TEXTS[currentLang];
     document.getElementById('input-prompt').innerText = t.inputPrompt;
     document.getElementById('user-question').placeholder = t.inputPlaceholder;
     document.getElementById('confirm-question-btn').innerText = t.btnBegin;
 
-    // 显现动画
+    // 延时显示 opacity 动画
     setTimeout(() => {
         inputScreen.style.opacity = 1;
-        document.getElementById('user-question').focus();
+        document.getElementById('user-question').focus(); // 自动聚焦输入框
     }, 100);
-
-    // ❌ 重点检查：这里绝对不能有 isStarted = true
-    // ❌ 重点检查：这里绝对不能有 spawnDeck()
-    // ❌ 重点检查：这里绝对不能有 toggleGuides(true)
 }
 
 function submitQuestion() {
     const inputField = document.getElementById('user-question');
     const val = inputField.value.trim();
     
-    // 获取问题
+    // 如果没填问题，给个默认值
     userQuestionText = val || (currentLang === 'zh' ? "我的命运指引" : "My general destiny");
 
-    // --- 1. 处理界面隐藏 (修复挡住操作的问题) ---
+    // 1. 隐藏提问页
     const inputScreen = document.getElementById('input-screen');
     inputScreen.style.opacity = 0;
-    // 🔴 关键修复：立即让它无法被点击，防止挡住 Canvas 的触摸事件
-    inputScreen.style.pointerEvents = 'none'; 
     setTimeout(() => { inputScreen.style.display = 'none'; }, 1000);
 
-    // --- 2. 重置物理变量 (修复旋转/中轴错乱问题) ---
-    // 确保一切从零开始，防止上次操作的残留干扰
-    ringRotation = 0; 
-    deckGroup.rotation.y = 0;
-    isDragging = false;
-    isInertia = false;
-    activeCard = null;
-    selectionCount = 0;
-    isRitualComplete = false;
-    
-    // --- 3. 生成卡牌 ---
-    // 先生成数据，再开启游戏循环，防止除以零的错误
-    spawnDeck(); 
-
-    // --- 4. 正式开启循环 ---
+    // 2. 正式开始仪式 (原 enterExperience 的后半部分)
     isStarted = true;
     const ui = document.getElementById('ui-layer');
     ui.style.opacity = 1;
     
     updateStatusText();
+    spawnDeck(); // 生成卡牌
     
-    // 显示指引 (加一个安全判断，防止报错)
-    if (typeof toggleGuides === 'function') {
-        toggleGuides(true);
-    }
+    // 显示指引 (这是刚才加上去的那个功能)
+    if (typeof toggleGuides === 'function') toggleGuides(true);
 }
 /**
  * THREE.JS SCENE SETUP
@@ -1078,6 +1057,9 @@ function spawnDeck() {
     deckGroup.position.y = isPortrait ? 2.0 : 0; 
     
     deckGroup.clear(); cardObjects = [];
+    // 🔴 [新增] 强制重置旋转角度，防止之前的 NaN 污染
+    ringRotation = 0;
+    deckGroup.rotation.y = 0;
     
     // ⚠️ 生成本地路径数据
     deckList = RWS_DATA.map(d => ({
@@ -1170,6 +1152,8 @@ function initTouchListeners() {
 
     // 2. 触摸移动
     container.addEventListener('touchmove', (e) => {
+        // 🔴 [新增] 如果还没正式开始（比如还在输入问题），禁止拖动
+        if (!isStarted) return;
         if (controlMode === 'hand') return; // 🛑 禁用
         e.preventDefault(); 
         if (!isDragging) return;
@@ -1521,6 +1505,7 @@ function handleInput() {
 
 // --- 新增：强制归位逻辑 ---
 function snapToGrid() {
+    if (!deckList || deckList.length === 0) return;
     // 1. 算出每张牌的间隔角度 (弧度)
     // 22张牌，一圈是 2PI
     const step = (Math.PI * 2) / deckList.length;
