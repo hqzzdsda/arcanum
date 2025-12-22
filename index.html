@@ -55,87 +55,6 @@ body.is-grabbing {
             box-sizing: border-box;
         }
 
-        /* --- 提问界面样式 --- */
-#question-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 90; /* 比 Start Screen 小，但比 UI 大 */
-    background: radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, #000 90%);
-    display: none; /* 默认隐藏 */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 1.5s ease;
-}
-
-.question-container {
-    text-align: center;
-    width: 80%;
-    max-width: 600px;
-    animation: fadeUp 1s ease-out forwards;
-}
-
-#question-title {
-    font-size: 24px;
-    letter-spacing: 6px;
-    color: #d4af37;
-    margin-bottom: 40px;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-}
-
-#question-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid rgba(212, 175, 55, 0.5);
-    color: #fff;
-    font-size: 20px;
-    padding: 10px 0;
-    text-align: center;
-    font-family: inherit; /* 继承 serif 字体 */
-    margin-bottom: 50px;
-    outline: none;
-    transition: border-color 0.3s;
-    border-radius: 0; /* 移除 iOS 圆角 */
-}
-
-#question-input:focus {
-    border-bottom-color: #d4af37;
-}
-
-#question-input::placeholder {
-    color: #666;
-    font-style: italic;
-    font-size: 16px;
-}
-
-#start-ritual-btn {
-    background: transparent;
-    color: #d4af37;
-    border: 1px solid #d4af37;
-    padding: 15px 50px;
-    font-size: 14px;
-    letter-spacing: 4px;
-    cursor: pointer;
-    border-radius: 50px;
-    font-family: inherit;
-    transition: all 0.4s;
-}
-
-#start-ritual-btn:hover {
-    background: #d4af37;
-    color: #000;
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
-}
-
-
-
         /* 标题动画与样式 */
         .title-group { 
             text-align: center; 
@@ -291,7 +210,83 @@ body.is-grabbing {
             100% { opacity: 0; transform: translateY(-100px) scale(0); }
         }
 
-        
+
+        /* --- 提问界面样式 --- */
+#question-screen {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 110; /* 比 start-screen 更高 */
+    background: radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, #000 90%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.question-container {
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    animation: fadeUp 1s ease-out;
+}
+
+#lbl-question-title {
+    font-size: 20px; /* 稍微调大 */
+    letter-spacing: 6px;
+    color: #d4af37;
+    margin-bottom: 40px;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.input-wrapper {
+    position: relative;
+    margin-bottom: 50px;
+    width: 100%;
+}
+
+#user-question {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    color: #fff;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px;
+    text-align: center;
+    outline: none;
+    resize: none;
+    padding: 10px;
+    transition: 0.5s;
+}
+
+#user-question:focus {
+    border-bottom-color: #d4af37;
+    box-shadow: 0 10px 20px -10px rgba(212, 175, 55, 0.2);
+}
+
+/* 确认按钮样式 (复用之前的胶囊风格但做微调) */
+#confirm-q-btn {
+    background: transparent;
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    padding: 15px 50px;
+    font-size: 14px;
+    letter-spacing: 4px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.4s;
+}
+#confirm-q-btn:hover {
+    background: #d4af37;
+    color: #000;
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+
+
         /* --- 游戏内 UI 层 --- */
         #ui-layer { 
             position: absolute; 
@@ -652,14 +647,17 @@ body.is-grabbing {
             </div>
         </div>
 
-        <button id="enter-btn" onclick="enterExperience()">ENTER</button>
+        <button id="enter-btn" onclick="goToQuestionPhase()">ENTER</button>
     </div>
-    
-    <div id="question-screen">
+
+    <div id="question-screen" style="display:none; opacity:0;">
         <div class="question-container">
-            <h2 id="question-title">What do you seek?</h2>
-            <input type="text" id="question-input" placeholder="Type your question here..." autocomplete="off">
-            <button id="start-ritual-btn" onclick="beginRitual()">BEGIN RITUAL</button>
+            <h2 id="lbl-question-title">WHAT IS YOUR QUERY?</h2>
+            <div class="input-wrapper">
+                <textarea id="user-question" rows="2" maxlength="100"></textarea>
+                <div class="input-line"></div>
+            </div>
+            <button id="confirm-q-btn" onclick="confirmQuestion()">BEGIN RITUAL</button>
         </div>
     </div>
 
@@ -769,9 +767,9 @@ const TEXTS = {
         btnHand: "Hand Gesture ✋", 
         btnMouse: isMobile ? "Touch Control 👆" : "Mouse Control 🖱️"  
         // [新增]
-        qTitle: "What is your question?",
-        qPlaceholder: "Focus on your intent...",
-        qBtn: "BEGIN RITUAL"      
+        qTitle: "WHAT DO YOU SEEK?",
+        qPlaceholder: "Focus on your question...",
+        qBtn: "BEGIN RITUAL",      
     },
     zh: {
         subtitle: "虚拟塔罗仪式",
@@ -789,9 +787,10 @@ const TEXTS = {
         restart: "重新开始仪式",
         btnHand: "手势控制 ✋", 
         btnMouse: isMobile ? "触屏控制 👆" : "鼠标控制 🖱️" 
-        qTitle: "你心中所惑为何？",
-        qPlaceholder: "专注于你的意念...",
-        qBtn: "开启仪式" 
+        // [新增]
+        qTitle: "心中所惑为何？",
+        qPlaceholder: "默念你的问题...",
+        qBtn: "开启仪式", 
     }
 };
 
@@ -826,6 +825,7 @@ let currentLang = 'en';
 let controlMode = isMobile ? 'mouse' : 'hand'; 
 let isStarted = false;
 let deckList = [];
+let userQuery = ""; // 用于存储用户的问题
 
 // --- 新增：物理引擎变量 ---
 let touchStartX = 0;      // 触摸起始位置
@@ -889,66 +889,33 @@ function updateStartScreenText() {
     // 更新按钮文字
     document.getElementById('btn-hand').innerText = t.btnHand;
     document.getElementById('btn-mouse').innerText = t.btnMouse;
-    // [新增] 更新提问界面文字
-    document.getElementById('question-title').innerText = t.qTitle;
-    document.getElementById('question-input').placeholder = t.qPlaceholder;
-    document.getElementById('start-ritual-btn').innerText = t.qBtn;
 }
 
-// 全局变量存储用户问题
-let userQuestionText = ""; 
-
-// 阶段 1: 从封面 -> 提问页
 function enterExperience() {
-    const screen = document.getElementById('start-screen');
-    const qScreen = document.getElementById('question-screen');
-    
-    // 隐藏封面
-    screen.style.opacity = 0;
-    screen.style.pointerEvents = 'none';
-    setTimeout(() => { screen.style.display = 'none'; }, 1500);
-
-    // 显示提问页
-    qScreen.style.display = 'flex';
-    // 稍微延迟一点让 fadeUp 动画播放得顺滑
-    setTimeout(() => {
-        qScreen.style.opacity = 1;
-        document.getElementById('question-input').focus(); // 自动聚焦输入框
-    }, 500);
-}
-
-// 阶段 2: 从提问页 -> 3D 场景 (真正的开始)
-function beginRitual() {
-    // 获取输入内容
-    const inputVal = document.getElementById('question-input').value.trim();
-    userQuestionText = inputVal; // 存起来给 AI 用
-
-    // 隐藏提问页
-    const qScreen = document.getElementById('question-screen');
-    qScreen.style.opacity = 0;
-    qScreen.style.pointerEvents = 'none';
-    setTimeout(() => { qScreen.style.display = 'none'; }, 1500);
-
-    // --- 原 enterExperience 的核心逻辑移到这里 ---
     isStarted = true;
+    //const screen = document.getElementById('start-screen');
+    //screen.style.opacity = 0;
+    //screen.style.pointerEvents = 'none'; 
+    //setTimeout(() => { screen.style.display = 'none'; }, 1500);
     const ui = document.getElementById('ui-layer');
     ui.style.opacity = 1;
     
+    // [新增] 调用刚才加的 toggleGuides 显示指引
+    toggleGuides(true);
+
     // 初始化输入监听
     if (controlMode === 'hand') {
         document.getElementById('video-feed').style.opacity = 0.3;
         initCamera();
     } else {
         initMouseListeners();
-        initTouchListeners(); 
+        initTouchListeners(); // 增加触摸监听
     }
     
-    updateCameraPos(); 
+    updateCameraPos(); // 确保相机位置正确
     updateStatusText();
     spawnDeck();
-    
-    // 如果你加了之前的“显隐控制函数”，这里别忘了调用
-    if (typeof toggleGuides === 'function') toggleGuides(true);
+
 }
 
 /**
@@ -1223,6 +1190,42 @@ function initTouchListeners() {
         dragDirection = null;
     });
 }
+// 1. 从首页 -> 提问页
+function goToQuestionPhase() {
+    // 隐藏首页
+    const startScreen = document.getElementById('start-screen');
+    startScreen.style.opacity = 0;
+    startScreen.style.pointerEvents = 'none';
+    setTimeout(() => { startScreen.style.display = 'none'; }, 1500);
+
+    // 准备提问页文案
+    const t = TEXTS[currentLang];
+    document.getElementById('lbl-question-title').innerText = t.qTitle;
+    document.getElementById('user-question').placeholder = t.qPlaceholder;
+    document.getElementById('confirm-q-btn').innerText = t.qBtn;
+
+    // 显示提问页
+    const qScreen = document.getElementById('question-screen');
+    qScreen.style.display = 'flex';
+    // 稍微延迟一点给 opacity 动画留出 reflow 时间
+    setTimeout(() => { qScreen.style.opacity = 1; }, 100);
+}
+
+// 2. 提问页 -> 正式进入游戏 (enterExperience)
+function confirmQuestion() {
+    const input = document.getElementById('user-question');
+    userQuery = input.value; // 保存问题供后续使用 (比如传给 AI)
+    
+    // 隐藏提问页
+    const qScreen = document.getElementById('question-screen');
+    qScreen.style.opacity = 0;
+    qScreen.style.pointerEvents = 'none';
+    setTimeout(() => { qScreen.style.display = 'none'; }, 1500);
+
+    // 正式启动 Three.js 和游戏逻辑
+    enterExperience();
+}
+
 
 // --- 辅助：下拉时的视觉计算 ---
 function updatePullingVisuals(card, progress) {
@@ -1809,15 +1812,11 @@ async function callTarotAPI(cards) {
         return `${posName}: ${name} [${status}]`;
     }).join("\n");
 
-
-    // [修改] Prompt 增加用户问题
-    const questionPart = userQuestionText 
-        ? (currentLang === 'zh' ? `求问者的问题是：“${userQuestionText}”\n` : `The seeker asks: "${userQuestionText}"\n`)
-        : "";
+    const queryPart = userQuery ? (currentLang === 'zh' ? `\n求问者的问题是：“${userQuery}”` : `\nThe seeker asks: "${userQuery}"`) : "";
 
     const prompt = currentLang === 'zh' 
         ? `你是一位神秘的塔罗牌占卜师。请根据以下牌阵为求问者解读命运：\n${cardDescriptions}\n\n要求：\n1. 用中文回答。\n2. 风格神秘、略微诗意、带有宿命感。\n3. 不要罗列牌意，而是将三张牌串联成一个完整的故事或指引。\n4. 字数控制在150字以内。`
-        : `You are a mystical Tarot reader. Interpret the following spread for the seeker:\n${cardDescriptions}\n\nRequirements:\n1. Answer in English.\n2. Tone: Mystical, slightly poetic, ominous yet hopeful.\n3. Do not list meanings separately; weave them into a coherent narrative.\n4. Keep it under 150 words.`;
+        : `You are a mystical Tarot reader. Interpret the following spread for the seeker:\n${cardDescriptions}\n\nRequirements:\n1. Answer in English.\n2. Tone: Mystical, poetic, ominous yet hopeful.\n3. Do not list meanings separately; weave them into a coherent narrative.\n4. Keep it under 150 words.`;
 
     // 增加 AbortController 用于超时控制
     const controller = new AbortController();
