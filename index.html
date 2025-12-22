@@ -569,6 +569,62 @@ body.is-grabbing {
         #video-feed { position: absolute; bottom: 10px; right: 10px; width: 100px; opacity: 0; transform: scaleX(-1); pointer-events: none; border: 1px solid #d4af37; transition: opacity 0.5s; }
         #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #d4af37; letter-spacing: 6px; font-size: 12px; font-weight: bold; z-index: 200; }
 
+
+        /* --- 新增：音乐开关样式 --- */
+#music-control {
+    position: absolute;
+    top: 20px;
+    left: 20px; /* 放在左上角，避免和右上角的历史记录冲突 */
+    width: 40px;
+    height: 40px;
+    border: 1px solid #d4af37;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 200; /* 保证最顶层 */
+    background: rgba(0, 0, 0, 0.6);
+    transition: all 0.3s;
+    opacity: 0.7;
+}
+
+#music-control:hover {
+    opacity: 1;
+    box-shadow: 0 0 10px #d4af37;
+    transform: scale(1.1);
+}
+
+.music-icon {
+    font-size: 20px;
+    user-select: none;
+    animation: rotateMusic 4s linear infinite; /* 播放时旋转 */
+}
+
+/* 关闭状态下的斜杠 */
+.music-line {
+    position: absolute;
+    width: 80%;
+    height: 2px;
+    background: #ff3333;
+    transform: rotate(45deg) scale(0); /* 默认隐藏 */
+    transition: transform 0.3s;
+}
+
+/* 当音乐暂停时的样式类 */
+#music-control.muted .music-icon {
+    animation-play-state: paused;
+    opacity: 0.5;
+}
+#music-control.muted .music-line {
+    transform: rotate(45deg) scale(1); /* 显示斜杠 */
+}
+
+@keyframes rotateMusic {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
         /* --- 移动端适配 (Responsive Styles) --- */
         @media (max-width: 768px) {
             h1 { font-size: 42px; letter-spacing: 8px; }
@@ -621,6 +677,19 @@ body.is-grabbing {
 </head>
 <body>
     <div id="loader"></div>
+
+    <audio id="bgm-intro" loop preload="auto">
+    <source src="./bgm1.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="bgm-final" loop preload="auto">
+    <source src="./bgm2.mp3" type="audio/mpeg">
+</audio>
+
+    <div id="music-control" onclick="toggleMusic()">
+        <div class="music-icon">🎵</div>
+        <div class="music-line"></div>
+    </div>
 
     <div id="start-screen">
         <div class="title-group">
@@ -809,6 +878,7 @@ const RWS_DATA = [
     { id: 21, en: { name: "The World", meaning: "Completion, integration" }, zh: { name: "世界", meaning: "完成，整合，成就，圆满" } }
 ];
 
+
 let currentLang = 'en';
 // 如果是手机，默认使用 Mouse/Touch 模式
 let controlMode = isMobile ? 'mouse' : 'hand'; 
@@ -882,6 +952,8 @@ function updateStartScreenText() {
 }
 
 function enterExperience() {
+    // 🔴 [修改] 播放第一首 (bgm1.mp3)
+    switchMusic('bgm-intro');
     // 1. 隐藏初始页
     const screen = document.getElementById('start-screen');
     screen.style.opacity = 0;
@@ -916,6 +988,8 @@ function submitQuestion() {
     // 1. 隐藏提问页
     const inputScreen = document.getElementById('input-screen');
     inputScreen.style.opacity = 0;
+    // 🔴 [修改] 停止所有音乐 (或者你想继续播第一首就删掉这行)
+    switchMusic(null);
     setTimeout(() => { inputScreen.style.display = 'none'; }, 1000);
 
     // 2. 正式开始逻辑
@@ -1257,6 +1331,65 @@ function toggleGuides(show) {
     
     // 隐藏时禁用点击，防止误触
     hud.style.pointerEvents = show ? 'auto' : 'none';
+}
+
+// ================= 音乐控制系统 (双音轨版) =================
+
+let currentAudioId = null; // 当前应该播放哪首 ( 'bgm-intro' 或 'bgm-final' )
+let isGlobalMuted = false; // 全局静音状态 (用户手动点击开关)
+
+// 1. 切换音轨核心函数
+function switchMusic(newId) {
+    // 先停止所有音乐
+    document.getElementById('bgm-intro').pause();
+    document.getElementById('bgm-final').pause();
+    
+    // 如果传入 null，说明要静音/停止
+    if (!newId) {
+        currentAudioId = null;
+        updateMusicBtnState(false); // 按钮停止旋转
+        return;
+    }
+
+    currentAudioId = newId;
+    const audio = document.getElementById(newId);
+    audio.currentTime = 0; // 从头开始
+    audio.volume = 0.5;    // 设置音量
+
+    // 如果用户没有手动静音，就开始播放
+    if (!isGlobalMuted) {
+        audio.play().catch(e => console.log("等待交互播放"));
+        updateMusicBtnState(true); // 按钮开始旋转
+    } else {
+        updateMusicBtnState(false); // 保持静音图标
+    }
+}
+
+// 2. 用户点击右上角按钮
+function toggleMusic() {
+    const btn = document.getElementById('music-control');
+    isGlobalMuted = !isGlobalMuted; // 切换状态
+
+    if (currentAudioId) {
+        const audio = document.getElementById(currentAudioId);
+        if (isGlobalMuted) {
+            audio.pause();
+            updateMusicBtnState(false);
+        } else {
+            audio.play();
+            updateMusicBtnState(true);
+        }
+    }
+}
+
+// 3. 更新按钮UI (辅助函数)
+function updateMusicBtnState(isPlaying) {
+    const btn = document.getElementById('music-control');
+    if (isPlaying) {
+        btn.classList.remove('muted');
+    } else {
+        btn.classList.add('muted');
+    }
 }
 
 // --- 修改后：回归本质的按钮监听 ---
@@ -1745,6 +1878,8 @@ function startEndRitual() {
 
 // --- 修改：进入星空解说模式 (支持异步 API) ---
 async function enterStarryVoid() {
+    // 🔴 [修改] 播放第二首 (bgm2.mp3)
+    switchMusic('bgm-final');
     // 隐藏按钮和标签
     document.getElementById('view-reading-btn').style.display = 'none';
     document.getElementById('final-text-container').style.opacity = 0;
