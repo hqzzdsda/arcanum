@@ -55,6 +55,87 @@ body.is-grabbing {
             box-sizing: border-box;
         }
 
+        /* --- 提问界面样式 --- */
+#question-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 90; /* 比 Start Screen 小，但比 UI 大 */
+    background: radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, #000 90%);
+    display: none; /* 默认隐藏 */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+
+.question-container {
+    text-align: center;
+    width: 80%;
+    max-width: 600px;
+    animation: fadeUp 1s ease-out forwards;
+}
+
+#question-title {
+    font-size: 24px;
+    letter-spacing: 6px;
+    color: #d4af37;
+    margin-bottom: 40px;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+#question-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.5);
+    color: #fff;
+    font-size: 20px;
+    padding: 10px 0;
+    text-align: center;
+    font-family: inherit; /* 继承 serif 字体 */
+    margin-bottom: 50px;
+    outline: none;
+    transition: border-color 0.3s;
+    border-radius: 0; /* 移除 iOS 圆角 */
+}
+
+#question-input:focus {
+    border-bottom-color: #d4af37;
+}
+
+#question-input::placeholder {
+    color: #666;
+    font-style: italic;
+    font-size: 16px;
+}
+
+#start-ritual-btn {
+    background: transparent;
+    color: #d4af37;
+    border: 1px solid #d4af37;
+    padding: 15px 50px;
+    font-size: 14px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    border-radius: 50px;
+    font-family: inherit;
+    transition: all 0.4s;
+}
+
+#start-ritual-btn:hover {
+    background: #d4af37;
+    color: #000;
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+
+
+
         /* 标题动画与样式 */
         .title-group { 
             text-align: center; 
@@ -210,87 +291,7 @@ body.is-grabbing {
             100% { opacity: 0; transform: translateY(-100px) scale(0); }
         }
 
-        /* --- 提问界面样式 --- */
-#question-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 90; /* 比 Start Screen 小，但比 UI 大 */
-    background: radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, #000 90%);
-    display: none; /* 默认隐藏 */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 1.5s ease;
-}
-
-.question-container {
-    text-align: center;
-    width: 80%;
-    max-width: 600px;
-    animation: fadeUp 1s ease-out forwards;
-}
-
-#question-title {
-    font-size: 24px;
-    letter-spacing: 6px;
-    color: #d4af37;
-    margin-bottom: 40px;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-}
-
-#question-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid rgba(212, 175, 55, 0.5);
-    color: #fff;
-    font-size: 20px;
-    padding: 10px 0;
-    text-align: center;
-    font-family: inherit; /* 继承 serif 字体 */
-    margin-bottom: 50px;
-    outline: none;
-    transition: border-color 0.3s;
-    border-radius: 0; /* 移除 iOS 圆角 */
-}
-
-#question-input:focus {
-    border-bottom-color: #d4af37;
-}
-
-#question-input::placeholder {
-    color: #666;
-    font-style: italic;
-    font-size: 16px;
-}
-
-#start-ritual-btn {
-    background: transparent;
-    color: #d4af37;
-    border: 1px solid #d4af37;
-    padding: 15px 50px;
-    font-size: 14px;
-    letter-spacing: 4px;
-    cursor: pointer;
-    border-radius: 50px;
-    font-family: inherit;
-    transition: all 0.4s;
-}
-
-#start-ritual-btn:hover {
-    background: #d4af37;
-    color: #000;
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
-}
-
-
-
+        
         /* --- 游戏内 UI 层 --- */
         #ui-layer { 
             position: absolute; 
