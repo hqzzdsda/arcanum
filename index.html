@@ -626,7 +626,29 @@ body.is-grabbing {
             letter-spacing: 1px;
         }
 
-        #video-feed { position: absolute; bottom: 10px; right: 10px; width: 100px; opacity: 0; transform: scaleX(-1); pointer-events: none; border: 1px solid #d4af37; transition: opacity 0.5s; }
+        /* --- 摄像头反馈窗口 (魔法镜子风格) --- */
+#video-feed { 
+    position: absolute; 
+    bottom: 30px;      /* 距离底部 */
+    right: 30px;       /* 距离右侧 */
+    width: 240px;      /* 宽度适中 */
+    height: 180px;     /* 高度 */
+    object-fit: cover; /* 保持比例填满 */
+    
+    /* 核心样式 */
+    opacity: 0;        /* 默认隐藏，JS控制显示 */
+    transform: scaleX(-1); /* 镜像翻转，否则操作是反的 */
+    border: 2px solid #d4af37; /* 金色边框 */
+    border-radius: 12px;       /* 圆角 */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 
+                0 0 10px rgba(212, 175, 55, 0.5); /* 发光效果 */
+    
+    z-index: 100;      /* 保证在最上层 */
+    pointer-events: none; /* 让鼠标能穿透它点击后面的东西 */
+    transition: opacity 1.0s, transform 0.5s;
+    background: #000;  /* 视频未加载时的背景 */
+    display: none;     /* 默认不占用布局 */
+}
         #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #d4af37; letter-spacing: 6px; font-size: 12px; font-weight: bold; z-index: 200; }
 
 
@@ -801,7 +823,7 @@ body.is-grabbing {
         </div>
         
         <div id="credits">
-            By: Jerry Hu & Gemini<br>huqiuzhi10@gmail.com
+            By: Jerry Hu & Gemini<br>feedback.arcana@gmail.com
         </div>
 
         <div id="hud-center">
@@ -1093,8 +1115,15 @@ function submitQuestion() {
     // 🟢 [新增] 只有卡牌生成了，才允许初始化控制
     // 这样就不会出现“除以零”的错误了
     if (controlMode === 'hand') {
-        document.getElementById('video-feed').style.opacity = 0.3;
-        initCamera();
+        const videoEl = document.getElementById('video-feed');
+        videoEl.style.display = 'block'; // 先让它占据布局
+        
+        // 稍微延时让它淡入
+        setTimeout(() => {
+            videoEl.style.opacity = 0.8; // 不完全不透明，保留一点通透感
+        }, 100);
+        
+        initCamera(); // 启动 Mediapipe
     } else {
         initMouseListeners();
         initTouchListeners();
@@ -1976,6 +2005,10 @@ function startEndRitual() {
 
 // --- 修改：进入星空解说模式 (支持异步 API) ---
 async function enterStarryVoid() {
+    // 🟢 [新增] 隐藏摄像头窗口，防止遮挡文字
+    const videoEl = document.getElementById('video-feed');
+    videoEl.style.opacity = 0;
+    setTimeout(() => { videoEl.style.display = 'none'; }, 1000);
     // 🔴 [修改] 播放第二首 (bgm2.mp3)
     switchMusic('bgm-final');
     // 隐藏按钮和标签
