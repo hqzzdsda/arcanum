@@ -5,55 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Arcanum: Final Ritual</title>
     <style>
-        /* --- 全局样式 (Global Styles) --- */
-html, body { 
-    margin: 0; 
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    /* 🔴 核心修改：强制禁止滚动，且固定定位 */
-    overflow: hidden; 
-    position: fixed; 
-    background-color: #000; 
-    font-family: 'Times New Roman', 'Songti SC', 'SimSun', serif; 
-    -webkit-tap-highlight-color: transparent;
-    /* 防止 iOS 橡皮筋回弹效果 */
-    overscroll-behavior: none;
-}
+        /* =========================================
+           全局样式 (Global Styles)
+           ========================================= */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            /* 🔴 Core Mod: Force disable scrolling and use fixed positioning */
+            /* 🔴 核心修改：强制禁止滚动，且固定定位 */
+            overflow: hidden;
+            position: fixed;
+            background-color: #000;
+            font-family: 'Times New Roman', 'Songti SC', 'SimSun', serif;
+            -webkit-tap-highlight-color: transparent;
+            /* Prevent iOS rubber-band scrolling / 防止 iOS 橡皮筋回弹效果 */
+            overscroll-behavior: none;
+        }
 
-#canvas-container { 
-    width: 100vw; 
-    height: 100vh; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    z-index: 1; 
-}
-        /* 默认鼠标是指针 */
-body {
-    cursor: default; 
-}
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
 
-/* 当鼠标悬停在中轴区域时 (JS控制类名) */
-body.can-grab {
-    cursor: grab;
-}
-body.is-grabbing {
-    cursor: grabbing;
-}
-        
-        /* --- 初始界面 (Start Screen) --- */
+        /* Default cursor is pointer / 默认鼠标是指针 */
+        body {
+            cursor: default;
+        }
+
+        /* When hovering over the axis area (Controlled by JS) */
+        /* 当鼠标悬停在中轴区域时 (JS控制类名) */
+        body.can-grab {
+            cursor: grab;
+        }
+
+        body.is-grabbing {
+            cursor: grabbing;
+        }
+
+        /* =========================================
+           初始界面 (Start Screen)
+           ========================================= */
         #start-screen {
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
             z-index: 100;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.95) 90%);
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
+            background: radial-gradient(circle at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.95) 90%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
             transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1);
             color: #d4af37;
@@ -61,38 +69,38 @@ body.is-grabbing {
             box-sizing: border-box;
         }
 
-        /* 标题动画与样式 */
-        .title-group { 
-            text-align: center; 
-            margin-bottom: 5vh; 
+        /* Title Animation & Styles / 标题动画与样式 */
+        .title-group {
+            text-align: center;
+            margin-bottom: 5vh;
             position: relative;
-            animation: floatTitle 6s ease-in-out infinite; 
+            animation: floatTitle 6s ease-in-out infinite;
         }
-        
-        h1 { 
-            font-size: 72px; 
-            margin: 0; 
-            letter-spacing: 20px; 
+
+        h1 {
+            font-size: 72px;
+            margin: 0;
+            letter-spacing: 20px;
             font-weight: 800;
             background: linear-gradient(135deg, #fff 0%, #d4af37 50%, #996515 100%);
-            -webkit-background-clip: text; 
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
             position: relative;
         }
-        
-        h2 { 
-            font-size: 14px; 
-            font-weight: 400; 
-            letter-spacing: 8px; 
-            color: #a0a0a0; 
-            margin-top: 15px; 
-            text-transform: uppercase; 
+
+        h2 {
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 8px;
+            color: #a0a0a0;
+            margin-top: 15px;
+            text-transform: uppercase;
             opacity: 0.8;
-            border-top: 1px solid rgba(212, 175, 55, 0.3); 
-            display: inline-block; 
-            padding-top: 15px; 
-            width: 120%; 
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            display: inline-block;
+            padding-top: 15px;
+            width: 120%;
             margin-left: -10%;
         }
 
@@ -101,476 +109,557 @@ body.is-grabbing {
             50% { transform: translateY(-10px); }
         }
 
-        /* 选项按钮网格 */
-        .options-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 60px; 
-            margin-bottom: 5vh; 
-            text-align: center; 
-            opacity: 0; 
-            animation: fadeUp 1s ease-out 0.5s forwards; 
+        /* Options Grid / 选项按钮网格 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 5vh;
+            text-align: center;
+            opacity: 0;
+            animation: fadeUp 1s ease-out 0.5s forwards;
         }
-        .option-group { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            align-items: center; 
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
         }
-        .option-label { 
-            font-size: 11px; 
-            letter-spacing: 3px; 
-            color: #666; 
-            text-transform: uppercase; 
-            margin-bottom: 5px; 
+
+        .option-label {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
             font-weight: 600;
         }
 
-        /* 胶囊按钮样式 */
+        /* Capsule Button Styles / 胶囊按钮样式 */
         .choice-btn {
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(212, 175, 55, 0.3); 
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.3);
             color: #888;
-            padding: 12px 0; 
+            padding: 12px 0;
             width: 160px;
-            font-family: inherit; 
-            font-size: 12px; 
+            font-family: inherit;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border-radius: 50px; 
-            position: relative; 
+            border-radius: 50px;
+            position: relative;
             overflow: hidden;
             backdrop-filter: blur(2px);
         }
-        
-        .choice-btn.active { 
-            border-color: #d4af37; 
-            color: #fff; 
-            background: rgba(212, 175, 55, 0.15); 
+
+        .choice-btn.active {
+            border-color: #d4af37;
+            color: #fff;
+            background: rgba(212, 175, 55, 0.15);
             box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
         }
-        
-        .choice-btn:hover { 
-            border-color: #fff; 
-            color: #fff; 
-            transform: translateY(-2px); 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+
+        .choice-btn:hover {
+            border-color: #fff;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
 
-        /* 进入按钮特效 */
+        /* Enter Button Effects / 进入按钮特效 */
         #enter-btn {
-            background: transparent; 
-            color: #d4af37; 
+            background: transparent;
+            color: #d4af37;
             border: 1px solid #d4af37;
-            padding: 18px 80px; 
-            font-size: 16px; 
-            letter-spacing: 8px; 
+            padding: 18px 80px;
+            font-size: 16px;
+            letter-spacing: 8px;
             cursor: pointer;
-            font-family: inherit; 
-            font-weight: 600; 
-            border-radius: 50px; 
+            font-family: inherit;
+            font-weight: 600;
+            border-radius: 50px;
             transition: all 0.5s;
-            position: relative; 
+            position: relative;
             overflow: hidden;
-            opacity: 0; 
+            opacity: 0;
             animation: fadeUp 1s ease-out 0.8s forwards;
         }
-        
+
         #enter-btn::before {
-            content: ''; 
-            position: absolute; 
-            top: 0; 
-            left: -100%; 
-            width: 100%; 
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
             transition: 0.5s;
         }
-        #enter-btn:hover::before { left: 100%; transition: 0.7s; }
-        #enter-btn:hover { 
-            background: #d4af37; 
-            color: #000; 
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4); 
-            transform: scale(1.05); 
+
+        #enter-btn:hover::before {
+            left: 100%;
+            transition: 0.7s;
+        }
+
+        #enter-btn:hover {
+            background: #d4af37;
+            color: #000;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
+            transform: scale(1.05);
             letter-spacing: 10px;
         }
 
-        @keyframes fadeUp { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 神秘学闪光粒子 */
+        /* Mystical Sparkles / 神秘学闪光粒子 */
         .sparkle {
-            position: absolute; 
-            background: white; 
+            position: absolute;
+            background: white;
             border-radius: 50%;
-            pointer-events: none; 
+            pointer-events: none;
             opacity: 0;
             box-shadow: 0 0 10px #d4af37, 0 0 20px #d4af37;
             animation: sparkleFloat linear forwards;
         }
+
         @keyframes sparkleFloat {
             0% { opacity: 0; transform: translateY(0) scale(0); }
             50% { opacity: 1; transform: translateY(-50px) scale(1); }
             100% { opacity: 0; transform: translateY(-100px) scale(0); }
         }
 
-
-        /* --- 输入界面美化 (覆盖旧样式) --- */
-#input-screen {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 90;
-    /* 背景保持半透明，让背后的 3D 星空透出来 */
-    background: rgba(0, 0, 0, 0.4); 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 1.0s;
-    backdrop-filter: blur(0px); /* 轻微模糊背景星空 */
-}
-
-/* 磨砂玻璃卡片 */
-.input-card {
-    width: 90%;
-    max-width: 400px;
-    padding: 40px 30px;
-    background: rgba(10, 10, 10, 0.6); /* 深色半透明底 */
-    border: 1px solid rgba(212, 175, 55, 0.2); /* 极淡的金边 */
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-    border-radius: 6px; /*稍微圆角，不要太圆 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    /* 磨砂效果关键 */
-    backdrop-filter: blur(10px); 
-    -webkit-backdrop-filter: blur(10px);
-    transform: translateY(0);
-    transition: transform 0.3s;
-}
-
-/* 顶部装饰星号 */
-.input-decoration {
-    color: #d4af37;
-    font-size: 20px;
-    margin-bottom: 15px;
-    opacity: 0.8;
-    animation: pulse 2s infinite;
-}
-
-/* 标题样式 */
-#input-prompt {
-    font-family: 'Times New Roman', serif; /* 强制衬线体 */
-    color: #fff;
-    font-size: 16px;
-    letter-spacing: 6px;
-    font-weight: 400;
-    margin: 0 0 30px 0;
-    text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-}
-
-/* 输入框样式 - 极简线条风 */
-#user-question {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3); /* 只有底边线 */
-    color: #d4af37;
-    font-family: 'Times New Roman', serif;
-    font-size: 20px;
-    text-align: center;
-    padding: 10px 0;
-    margin-bottom: 40px;
-    outline: none;
-    resize: none;
-    border-radius: 0;
-    transition: border-color 0.3s;
-}
-
-#user-question:focus {
-    border-bottom-color: #d4af37; /* 聚焦时线条变亮 */
-}
-
-#user-question::placeholder {
-    color: rgba(255, 255, 255, 0.2);
-    font-size: 14px;
-    letter-spacing: 2px;
-    font-style: italic;
-}
-
-/* 按钮样式 */
-#confirm-question-btn {
-    background: transparent;
-    color: #d4af37;
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    padding: 12px 50px;
-    font-size: 12px;
-    letter-spacing: 4px;
-    border-radius: 50px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-#confirm-question-btn:hover {
-    background: rgba(212, 175, 55, 0.1);
-    border-color: #d4af37;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-    transform: scale(1.05);
-}
-
-/* 移动端特殊适配 */
-@media (max-width: 768px) {
-    .input-card {
-        padding: 30px 20px;
-        width: 85%;
-        margin-top: -10%; /* 稍微往上提一点，避开手机键盘 */
-    }
-    #input-prompt {
-        font-size: 14px;
-        letter-spacing: 4px;
-    }
-    #user-question {
-        font-size: 18px;
-        margin-bottom: 30px;
-    }
-}
-
-        /* --- 游戏内 UI 层 --- */
-        #ui-layer { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            z-index: 20; 
-            pointer-events: none; 
-            color: #d4af37; 
-            opacity: 0; 
-            transition: opacity 1.5s; 
-            /* --- 新增：中轴指针 (Axis Markers) --- */
-            #axis-markers {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    /* 居中自身 */
-    transform: translateX(-50%);
-    
-    width: 2px; /* 极细的中轴线容器 */
-    height: 100%;
-    
-    /* ⚠️ 核心层级控制：
-       虽然 Z-index 比 Canvas 高，但通过透明度和混合模式，
-       让它表现得像是在“背景”里，不会遮挡卡牌内容 */
-    z-index: 5; 
-    pointer-events: none; /* 绝对穿透 */
-    opacity: 0.4; /* 低对比度，似有若无 */
-}
-
-/* 上指针 (Top Pointer) */
-#axis-markers::before {
-    content: '';
-    position: absolute;
-    top: 20%; /* 距离顶部的位置，避开卡牌区域 */
-    left: 50%;
-    transform: translateX(-50%);
-    
-    /* 形状：细长菱形或针尖 */
-    width: 1px;
-    height: 30px; 
-    background: linear-gradient(to bottom, transparent, #ccd437);
-}
-/* 上指针的装饰点 (12点钟刻度感) */
-#axis-markers::after {
-    content: '';
-    position: absolute;
-    top: calc(20% + 35px); /* 在线条下方一点 */
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    
-    width: 4px;
-    height: 4px;
-    border: 1px solid #ccd437;
-    background: transparent;
-    opacity: 0.6;
-}
-
-/* 下指针 (Bottom Pointer) */
-/* 为了代码整洁，我们用一个子元素来做下指针 */
-.bottom-marker {
-    position: absolute;
-    bottom: 12%; /* 距离底部的位置 */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
-}
-
-.bottom-marker::before {
-    content: '';
-    position: absolute;
-    bottom: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    
-    width: 1px;
-    height: 30px; 
-    background: linear-gradient(to top, transparent, #ccd437);
-}
-
-.bottom-marker::after {
-    content: '';
-    position: absolute;
-    bottom: calc(20% + 35px); /* 在线条上方一点 */
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    
-    width: 4px;
-    height: 4px;
-    border: 1px solid #ccd437;
-    background: transparent;
-    opacity: 0.6;
-}
-
+        /* =========================================
+           输入界面美化 (覆盖旧样式)
+           Input Screen Styling
+           ========================================= */
+        #input-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 90;
+            /* Semi-transparent background to show 3D stars / 背景保持半透明，让背后的 3D 星空透出来 */
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 1.0s;
+            backdrop-filter: blur(0px);
         }
-        
-        /* 历史记录栏 */
+
+        /* Frosted Glass Card / 磨砂玻璃卡片 */
+        .input-card {
+            width: 90%;
+            max-width: 400px;
+            padding: 40px 30px;
+            background: rgba(10, 10, 10, 0.6); /* Dark semi-transparent / 深色半透明底 */
+            border: 1px solid rgba(212, 175, 55, 0.2); /* Faint gold border / 极淡的金边 */
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            /* Key frosted effect / 磨砂效果关键 */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transform: translateY(0);
+            transition: transform 0.3s;
+        }
+
+        /* Top Decoration / 顶部装饰星号 */
+        .input-decoration {
+            color: #d4af37;
+            font-size: 20px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        /* Title Style / 标题样式 */
+        #input-prompt {
+            font-family: 'Times New Roman', serif;
+            color: #fff;
+            font-size: 16px;
+            letter-spacing: 6px;
+            font-weight: 400;
+            margin: 0 0 30px 0;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Input Field - Minimalist Line / 输入框样式 - 极简线条风 */
+        #user-question {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3); /* Bottom line only / 只有底边线 */
+            color: #d4af37;
+            font-family: 'Times New Roman', serif;
+            font-size: 20px;
+            text-align: center;
+            padding: 10px 0;
+            margin-bottom: 40px;
+            outline: none;
+            resize: none;
+            border-radius: 0;
+            transition: border-color 0.3s;
+        }
+
+        #user-question:focus {
+            border-bottom-color: #d4af37;
+        }
+
+        #user-question::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+            letter-spacing: 2px;
+            font-style: italic;
+        }
+
+        /* Button Style / 按钮样式 */
+        #confirm-question-btn {
+            background: transparent;
+            color: #d4af37;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 12px 50px;
+            font-size: 12px;
+            letter-spacing: 4px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #confirm-question-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #d4af37;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Mobile Adaptation / 移动端特殊适配 */
+        @media (max-width: 768px) {
+            .input-card {
+                padding: 30px 20px;
+                width: 85%;
+                margin-top: -10%; /* Lift slightly for keyboard / 稍微往上提一点，避开手机键盘 */
+            }
+            #input-prompt {
+                font-size: 14px;
+                letter-spacing: 4px;
+            }
+            #user-question {
+                font-size: 18px;
+                margin-bottom: 30px;
+            }
+        }
+
+        /* =========================================
+           游戏内 UI 层 (Game UI Layer)
+           ========================================= */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none;
+            color: #d4af37;
+            opacity: 0;
+            transition: opacity 1.5s;
+        }
+
+        /* --- New: Axis Markers / 新增：中轴指针 --- */
+        #axis-markers {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px; /* Very thin axis container / 极细的中轴线容器 */
+            height: 100%;
+            /* ⚠️ Core Z-index control: Acts like background / 核心层级控制：表现得像是在“背景”里 */
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* Top Pointer / 上指针 */
+        #axis-markers::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 30px;
+            background: linear-gradient(to bottom, transparent, #ccd437);
+        }
+
+        /* Top Pointer Decoration (12 o'clock feel) / 上指针的装饰点 (12点钟刻度感) */
+        #axis-markers::after {
+            content: '';
+            position: absolute;
+            top: calc(20% + 35px);
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 4px;
+            height: 4px;
+            border: 1px solid #ccd437;
+            background: transparent;
+            opacity: 0.6;
+        }
+
+        /* Bottom Pointer / 下指针 */
+        .bottom-marker {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+        }
+
+        .bottom-marker::before {
+            content: '';
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 30px;
+            background: linear-gradient(to top, transparent, #ccd437);
+        }
+
+        .bottom-marker::after {
+            content: '';
+            position: absolute;
+            bottom: calc(20% + 35px);
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 4px;
+            height: 4px;
+            border: 1px solid #ccd437;
+            background: transparent;
+            opacity: 0.6;
+        }
+
+        /* History Bar / 历史记录栏 */
         #history-container {
-            position: absolute; 
-            top: 20px; 
+            position: absolute;
+            top: 20px;
             right: 20px;
-            display: flex; 
-            flex-direction: row; 
+            display: flex;
+            flex-direction: row;
             gap: 15px;
-            pointer-events: auto; 
-            z-index: 30; 
-            height: 100px; 
+            pointer-events: auto;
+            z-index: 30;
+            height: 100px;
             align-items: flex-start;
             transition: opacity 1s ease;
         }
+
         .history-slot {
-            width: 50px; 
-            height: 85px; 
-            background: #fff; 
-            border: 2px solid #d4af37; 
-            border-radius: 8px; 
+            width: 50px;
+            height: 85px;
+            background: #fff;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
             overflow: hidden;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: flex-end;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8); 
-            flex-shrink: 0; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+            flex-shrink: 0;
             position: relative;
             animation: slotEnter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        @keyframes slotEnter { 
-            from { opacity:0; transform: translateY(-20px); } 
-            to { opacity:1; transform: translateY(0); } 
-        }
-        .history-slot img { position: absolute; top:0; left:0; width: 100%; height: 100%; object-fit: cover; }
-        .history-info { position: relative; z-index: 2; width: 100%; background: rgba(0,0,0,0.8); text-align: center; padding: 2px 0; border-top: 1px solid #d4af37; }
-        .history-name { font-size: 8px; color: #d4af37; font-weight: 700; white-space: nowrap; transform: scale(0.9); }
-        .history-rev { font-size: 7px; color: #ff3333; display: none; font-weight: bold; background: rgba(0,0,0,0.5); width:100%; }
-        .is-reversed img { transform: rotate(180deg); }
-        .is-reversed .history-rev { display: block; }
 
-        /* 底部 HUD */
+        @keyframes slotEnter {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .history-slot img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .history-info {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            text-align: center;
+            padding: 2px 0;
+            border-top: 1px solid #d4af37;
+        }
+
+        .history-name {
+            font-size: 8px;
+            color: #d4af37;
+            font-weight: 700;
+            white-space: nowrap;
+            transform: scale(0.9);
+        }
+
+        .history-rev {
+            font-size: 7px;
+            color: #ff3333;
+            display: none;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+
+        .is-reversed img {
+            transform: rotate(180deg);
+        }
+
+        .is-reversed .history-rev {
+            display: block;
+        }
+
+        /* Bottom HUD / 底部 HUD */
         #hud-center {
-            position: absolute; 
-            bottom: 8%; 
-            left: 50%; 
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
             transform: translateX(-50%);
-            text-align: center; 
-            color: #d4af37; 
-            pointer-events: none; 
+            text-align: center;
+            color: #d4af37;
+            pointer-events: none;
             width: 100%;
             background: transparent;
             border-radius: 0;
         }
 
-        /* 按下时的反馈 */
         #hud-center:active {
-        transform: none; background: transparent;
+            transform: none;
+            background: transparent;
         }
 
-        #gesture-icon { font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.9; text-shadow: 0 0 15px #d4af37;}
-        #status-text { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
+        #gesture-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            text-shadow: 0 0 15px #d4af37;
+        }
 
+        #status-text {
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+            opacity: 0.8;
+        }
 
-        /* 最终结果文字容器 */
+        /* Final Text Container / 最终结果文字容器 */
         #final-text-container {
-            position: absolute; 
-            top: 65%; /* 稍微上移以适配小屏幕 */
-            left: 0; 
+            position: absolute;
+            top: 65%;
+            left: 0;
             width: 100%;
-            text-align: center; 
-            opacity: 0; 
+            text-align: center;
+            opacity: 0;
             transition: opacity 2s;
-            pointer-events: none; 
-            display: flex; 
-            justify-content: center; 
-            gap: 120px; /* 桌面端间距改大 */
-            flex-wrap: wrap; /* 允许换行 */
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            gap: 120px;
+            flex-wrap: wrap;
             padding: 0 20px;
             box-sizing: border-box;
         }
+
         .final-card-label {
-            display: flex; 
-            flex-direction: column; 
-            width: 220px; 
-            color: #fff; 
-            text-shadow: 0 0 10px #d4af37; 
+            display: flex;
+            flex-direction: column;
+            width: 220px;
+            color: #fff;
+            text-shadow: 0 0 10px #d4af37;
             text-align: center;
             animation: textFloat 3s ease-in-out infinite alternate;
             margin-bottom: 20px;
         }
-        @keyframes textFloat { from { transform: translateY(0); } to { transform: translateY(-5px); } }
-        
-        .final-name { font-size: 15px; font-weight: bold; color: #d4af37; margin-bottom: 8px; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 5px; }
-        .final-meaning { font-size: 11px; color: #ccc; font-style: italic; line-height: 1.5; opacity: 0.8; }
 
-        /* 重启按钮区域 (包含查看指引) */
+        @keyframes textFloat {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+
+        .final-name {
+            font-size: 15px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .final-meaning {
+            font-size: 11px;
+            color: #ccc;
+            font-style: italic;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        /* Restart UI (Includes View Guide) / 重启按钮区域 (包含查看指引) */
         #end-ui {
-            position: absolute; 
-            bottom: 12%; 
-            left: 0; 
+            position: absolute;
+            bottom: 12%;
+            left: 0;
             width: 100%;
-            display: flex; 
-            flex-direction: column; /* 垂直排列 */
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            opacity: 0; 
-            pointer-events: none; 
-            transition: opacity 1.5s; 
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s;
             z-index: 50;
             gap: 20px;
         }
-        
+
         #restart-btn {
-            background: rgba(0,0,0,0.7); 
-            border: 1px solid #d4af37; 
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #d4af37;
             color: #d4af37;
-            padding: 12px 50px; 
-            font-size: 13px; 
-            letter-spacing: 4px; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-family: inherit; 
+            padding: 12px 50px;
+            font-size: 13px;
+            letter-spacing: 4px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
             transition: 0.4s;
             backdrop-filter: blur(5px);
         }
-        #restart-btn:hover { background: #d4af37; color: #000; box-shadow: 0 0 25px rgba(212, 175, 55, 0.6); }
 
-        /* 新增：查看指引按钮 */
+        #restart-btn:hover {
+            background: #d4af37;
+            color: #000;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+        }
+
+        /* New: View Guide Button / 新增：查看指引按钮 */
         #view-reading-btn {
-            background: #d4af37;  /* 金色背景 */
-            color: #000;          /* 黑色文字 */
+            background: #d4af37;
+            color: #000;
             border: 1px solid #d4af37;
             padding: 15px 60px;
             font-size: 14px;
@@ -582,12 +671,13 @@ body.is-grabbing {
             transition: 0.4s;
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
         }
+
         #view-reading-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 0 40px rgba(212, 175, 55, 0.8);
         }
 
-        /* 新增：解说文字全屏容器 */
+        /* New: Oracle Overlay Container / 新增：解说文字全屏容器 */
         #oracle-overlay {
             position: absolute;
             top: 50%;
@@ -597,117 +687,124 @@ body.is-grabbing {
             max-width: 700px;
             text-align: center;
             color: #fff;
-            font-size: 18px;        
-            line-height: 2.0;       
+            font-size: 18px;
+            line-height: 2.0;
             font-family: 'Noto Serif SC', serif;
             text-shadow: 0 0 10px #d4af37;
             z-index: 60;
-            pointer-events: none; /* 开始时不可点击 */
+            pointer-events: none;
             opacity: 1;
         }
 
-        /* Loading 呼吸灯动画 */
-        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        /* Loading Pulse Animation / Loading 呼吸灯动画 */
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
 
-        /* --- 制作人员信息 --- */
+        /* --- Credits / 制作人员信息 --- */
         #credits {
-            position: absolute; 
-            bottom: 20px; 
+            position: absolute;
+            bottom: 20px;
             right: 25px;
-            text-align: right; 
-            color: #a0a0a0; 
+            text-align: right;
+            color: #a0a0a0;
             font-size: 10px;
-            line-height: 1.6; 
-            opacity: 0; 
+            line-height: 1.6;
+            opacity: 0;
             transition: opacity 1.5s;
-            pointer-events: none; 
-            z-index: 50; 
+            pointer-events: none;
+            z-index: 50;
             font-family: 'Noto Serif SC', serif;
             letter-spacing: 1px;
         }
 
-        /* --- 摄像头反馈窗口 (魔法镜子风格) --- */
-#video-feed { 
-    position: absolute; 
-    bottom: 30px;      /* 距离底部 */
-    right: 30px;       /* 距离右侧 */
-    width: 240px;      /* 宽度适中 */
-    height: 180px;     /* 高度 */
-    object-fit: cover; /* 保持比例填满 */
-    
-    /* 核心样式 */
-    opacity: 0;        /* 默认隐藏，JS控制显示 */
-    transform: scaleX(-1); /* 镜像翻转，否则操作是反的 */
-    border: 2px solid #d4af37; /* 金色边框 */
-    border-radius: 12px;       /* 圆角 */
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 
-                0 0 10px rgba(212, 175, 55, 0.5); /* 发光效果 */
-    
-    z-index: 100;      /* 保证在最上层 */
-    pointer-events: none; /* 让鼠标能穿透它点击后面的东西 */
-    transition: opacity 1.0s, transform 0.5s;
-    background: #000;  /* 视频未加载时的背景 */
-    display: none;     /* 默认不占用布局 */
-}
-        #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #d4af37; letter-spacing: 6px; font-size: 12px; font-weight: bold; z-index: 200; }
+        #video-feed {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 100px;
+            opacity: 0;
+            transform: scaleX(-1);
+            pointer-events: none;
+            border: 1px solid #d4af37;
+            transition: opacity 0.5s;
+        }
 
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #d4af37;
+            letter-spacing: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 200;
+        }
 
-        /* --- 新增：音乐开关样式 --- */
-#music-control {
-    position: absolute;
-    top: 20px;
-    left: 20px; /* 放在左上角，避免和右上角的历史记录冲突 */
-    width: 40px;
-    height: 40px;
-    border: 1px solid #d4af37;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 200; /* 保证最顶层 */
-    background: rgba(0, 0, 0, 0.6);
-    transition: all 0.3s;
-    opacity: 0.7;
-}
+        /* =========================================
+           Music Control Styles / 音乐开关样式
+           ========================================= */
+        #music-control {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #d4af37;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.6);
+            transition: all 0.3s;
+            opacity: 0.7;
+        }
 
-#music-control:hover {
-    opacity: 1;
-    box-shadow: 0 0 10px #d4af37;
-    transform: scale(1.1);
-}
+        #music-control:hover {
+            opacity: 1;
+            box-shadow: 0 0 10px #d4af37;
+            transform: scale(1.1);
+        }
 
-.music-icon {
-    font-size: 20px;
-    user-select: none;
-    animation: rotateMusic 4s linear infinite; /* 播放时旋转 */
-}
+        .music-icon {
+            font-size: 20px;
+            user-select: none;
+            animation: rotateMusic 4s linear infinite;
+        }
 
-/* 关闭状态下的斜杠 */
-.music-line {
-    position: absolute;
-    width: 80%;
-    height: 2px;
-    background: #ff3333;
-    transform: rotate(45deg) scale(0); /* 默认隐藏 */
-    transition: transform 0.3s;
-}
+        /* Slash line when muted / 关闭状态下的斜杠 */
+        .music-line {
+            position: absolute;
+            width: 80%;
+            height: 2px;
+            background: #ff3333;
+            transform: rotate(45deg) scale(0);
+            transition: transform 0.3s;
+        }
 
-/* 当音乐暂停时的样式类 */
-#music-control.muted .music-icon {
-    animation-play-state: paused;
-    opacity: 0.5;
-}
-#music-control.muted .music-line {
-    transform: rotate(45deg) scale(1); /* 显示斜杠 */
-}
+        #music-control.muted .music-icon {
+            animation-play-state: paused;
+            opacity: 0.5;
+        }
 
-@keyframes rotateMusic {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+        #music-control.muted .music-line {
+            transform: rotate(45deg) scale(1);
+        }
 
-        /* --- 移动端适配 (Responsive Styles) --- */
+        @keyframes rotateMusic {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* =========================================
+           Mobile Adaptation (Responsive Styles)
+           移动端适配
+           ========================================= */
         @media (max-width: 768px) {
             h1 { font-size: 42px; letter-spacing: 8px; }
             h2 { font-size: 10px; letter-spacing: 4px; }
@@ -717,8 +814,8 @@ body.is-grabbing {
             #axis-markers::before { top: 15%; }
             #axis-markers::after { top: calc(15% + 35px); }
             .bottom-marker { bottom: 20%; }
-            
-            /* 移动端历史记录置顶居中 */
+
+            /* Mobile History Bar: Centered at Top / 移动端历史记录置顶居中 */
             #history-container {
                 top: 10px;
                 right: 50%;
@@ -729,29 +826,29 @@ body.is-grabbing {
             .history-slot { width: 40px; height: 65px; }
             .history-name { font-size: 6px; }
 
-            /* HUD 调整 */
+            /* HUD Adjustments / HUD 调整 */
             #hud-center { bottom: 15%; }
             #status-text { font-size: 10px; letter-spacing: 2px; }
-            
-            /* 制作人员信息缩小 */
+
+            /* Shrink Credits / 制作人员信息缩小 */
             #credits { text-align: center; right: 0; width: 100%; bottom: 10px; font-size: 8px; }
-            
-            /* 最终结果文字调整 */
-            #final-text-container { 
-                top: 47%;           /* 调整垂直位置 */
-                flex-direction: column; /* 强制垂直排列，防止文字挤压 */
-                align-items: center;    /* 居中对齐 */
-                max-height: 40vh;       /* 限制高度，防止遮挡底部按钮 */
-                overflow-y: auto;       /* 如果文字太多，允许滚动 */
-                gap: 10px; /* 移动端间距改回小值 */
+
+            /* Final Result Text Adjustments / 最终结果文字调整 */
+            #final-text-container {
+                top: 47%;
+                flex-direction: column;
+                align-items: center;
+                max-height: 40vh;
+                overflow-y: auto;
+                gap: 10px;
             }
             .final-card-label { width: 100%; max-width: 300px; }
-            
-            /* 解说文字在手机上小一点 */
+
+            /* Oracle Text Smaller on Mobile / 解说文字在手机上小一点 */
             #oracle-overlay { font-size: 14px; width: 90%; }
         }
     </style>
-    
+
     <script src="https://cdn.bootcdn.net/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
@@ -761,12 +858,12 @@ body.is-grabbing {
     <div id="loader"></div>
 
     <audio id="bgm-intro" loop preload="auto">
-    <source src="./audio/bgm1.mp3" type="audio/mpeg">
-</audio>
+        <source src="./audio/bgm1.mp3" type="audio/mpeg">
+    </audio>
 
-<audio id="bgm-final" loop preload="auto">
-    <source src="./audio/bgm2.mp3" type="audio/mpeg">
-</audio>
+    <audio id="bgm-final" loop preload="auto">
+        <source src="./audio/bgm2.mp3" type="audio/mpeg">
+    </audio>
 
     <div id="music-control" onclick="toggleMusic()">
         <div class="music-icon">🎵</div>
@@ -795,35 +892,33 @@ body.is-grabbing {
         <button id="enter-btn" onclick="enterExperience()">ENTER</button>
     </div>
 
-<div id="input-screen" style="display: none;">
-    <div class="input-card">
-        <div class="input-decoration">✦</div> <h2 id="input-prompt">CONSULT THE VOID</h2>
-        <div class="input-line"></div>
-        <textarea id="user-question" rows="1" maxlength="50"></textarea> <button id="confirm-question-btn" onclick="submitQuestion()">INITIATE</button>
+    <div id="input-screen" style="display: none;">
+        <div class="input-card">
+            <div class="input-decoration">✦</div>
+            <h2 id="input-prompt">CONSULT THE VOID</h2>
+            <div class="input-line"></div>
+            <textarea id="user-question" rows="1" maxlength="50"></textarea>
+            <button id="confirm-question-btn" onclick="submitQuestion()">INITIATE</button>
+        </div>
     </div>
-</div>
 
     <div id="ui-layer">
         <div id="axis-markers">
             <div class="bottom-marker"></div>
         </div>
-        <div id="debug-axis-info" style=";
-        ">
-        </div>
+        <div id="debug-axis-info"></div>
 
         <div id="history-container"></div>
         <div id="final-text-container"></div>
-
-
         <div id="oracle-overlay"></div>
 
         <div id="end-ui">
             <button id="view-reading-btn" onclick="enterStarryVoid()">REVEAL DESTINY</button>
             <button id="restart-btn" onclick="location.reload()" style="display:none">RESTART RITUAL</button>
         </div>
-        
+
         <div id="credits">
-            By: Jerry Hu & Gemini<br>feedback.arcana@gmail.com
+            By: Jerry Hu & Gemini<br>huqiuzhi10@gmail.com
         </div>
 
         <div id="hud-center">
@@ -836,1494 +931,1507 @@ body.is-grabbing {
     <div id="canvas-container"></div>
 
 <script>
+    // ==========================================
+    // Mobile Viewport Correction / 移动端视口修正
+    // ==========================================
 
-// ================= 移动端视口修正 =================
-
-// 1. 刷新时强制回到顶部，并禁用浏览器默认的“记住滚动位置”
-if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
-}
-window.scrollTo(0, 0);
-
-// 2. 监听输入框失去焦点 (键盘收起)
-// 等 DOM 加载完再绑定
-window.addEventListener('DOMContentLoaded', () => {
-    const inputArea = document.getElementById('user-question');
-    if (inputArea) {
-        inputArea.addEventListener('blur', () => {
-            // 延时一点点，等键盘动画收完，强制滚回顶部
-            setTimeout(() => {
-                window.scrollTo(0, 0);
-                document.body.scrollTop = 0;
-            }, 100);
-        });
+    // 1. Force scroll to top on refresh and disable browser's default "scroll restoration"
+    // 1. 刷新时强制回到顶部，并禁用浏览器默认的“记住滚动位置”
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
     }
-});
-
-// ================= API 配置区域 =================
-// 🔴 请在这里填入你的 DeepSeek API Key (sk-xxxxxxxx)
-const API_KEY = "sk-92c5cec08baf4941a5ab5a185cd9c22f"; 
-
-// DeepSeek 官方接口地址
-const API_ENDPOINT = "https://api.deepseek.com/chat/completions"; 
-
-// DeepSeek 模型名称
-const API_MODEL = "deepseek-chat"; 
-
-// 🔵 代理开关：只在最后调用 API 时生效
-const USE_PROXY_FOR_API = true;
-
-// 代理服务地址 (仅在 API 调用瞬间使用)
-const PROXY_BASE_URL = "https://corsproxy.io/?"; 
-
-// 调试开关
-const DEBUG_MODE = true;
-// ==============================================
-
-
-// 检测是否移动设备
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-// 1. 闪光特效逻辑
-function createSparkles() {
-    const screen = document.getElementById('start-screen');
-    if(screen.style.display === 'none') return; 
-
-    const sparkle = document.createElement('div');
-    sparkle.className = 'sparkle';
-    
-    // 随机位置
-    const x = Math.random() * 100;
-    const y = Math.random() * 100;
-    sparkle.style.left = x + '%';
-    sparkle.style.top = y + '%';
-    
-    // 随机大小和持续时间
-    const size = Math.random() * 3 + 1; 
-    sparkle.style.width = size + 'px';
-    sparkle.style.height = size + 'px';
-    sparkle.style.animationDuration = (Math.random() * 2 + 2) + 's'; 
-    
-    screen.appendChild(sparkle);
-
-    // 动画结束后移除
-    setTimeout(() => { sparkle.remove(); }, 4000);
-}
-setInterval(createSparkles, 200);
-
-
-/**
- * DATA & CONFIG
- */
-const TEXTS = {
-    en: {
-        subtitle: "The Virtual Ritual",
-        lblLang: "Language",
-        lblInput: "Input Method",
-        enter: "ENTER VOID",
-        statusWave: "Wave to Turn · Pinch Center Card · Clench to Reveal",
-        statusMouse: "Move to Turn · Hold to Grab · Long Press to Reveal",
-        statusTouch: "Swipe to Turn · Pull Down to Grab / Reveal",
-        statusFist: "FIST TO REVEAL",
-        statusSpace: "SPACE / HOLD TO REVEAL",
-        statusReveal: "OBSERVING FATE...",
-        statusDone: "RITUAL COMPLETE",
-        rev: "Reversed",
-        restart: "RESTART RITUAL",
-        btnHand: "Hand Gesture ✋", 
-        btnMouse: isMobile ? "Touch Control 👆" : "Mouse Control 🖱️",
-        inputPrompt: "What do you seek?",
-        inputPlaceholder: "Enter your query...",
-        btnBegin: "SEEK ANSWER"       
-    },
-    zh: {
-        subtitle: "虚拟塔罗仪式",
-        lblLang: "语言设置",
-        lblInput: "操控方式",
-        enter: "进入虚空",
-        statusWave: "挥手转动牌阵 · 捏合手指选中 · 握拳揭示",
-        statusMouse: "移动鼠标转动 · 按住左键抓取 · 长按揭示",
-        statusTouch: "左右滑动转动 · 下拉抓取/揭示",
-        statusFist: "握拳揭示命运",
-        statusSpace: "按空格 / 长按揭示",
-        statusReveal: "正在观测命运...",
-        statusDone: "仪式完成",
-        rev: "逆位",
-        restart: "重新开始仪式",
-        btnHand: "手势控制 ✋", 
-        btnMouse: isMobile ? "触屏控制 👆" : "鼠标控制 🖱️",  
-        inputPrompt: "心中所问",
-        inputPlaceholder: "在此输入...",
-        btnBegin: "开始探寻"
-    }
-};
-
-// 基础数据 (完整22张)
-const RWS_DATA = [
-    { id: 0, en: { name: "The Fool", meaning: "New beginnings, innocence, spontaneity" }, zh: { name: "愚者", meaning: "新的开始，天真，自发性，冒险" } },
-    { id: 1, en: { name: "The Magician", meaning: "Manifestation, resourcefulness, power" }, zh: { name: "魔术师", meaning: "显化，资源丰富，力量，创造力" } },
-    { id: 2, en: { name: "High Priestess", meaning: "Intuition, sacred knowledge" }, zh: { name: "女祭司", meaning: "直觉，神圣知识，潜意识，神秘" } },
-    { id: 3, en: { name: "The Empress", meaning: "Femininity, beauty, nature" }, zh: { name: "皇后", meaning: "女性力量，美丽，自然，孕育" } },
-    { id: 4, en: { name: "The Emperor", meaning: "Authority, establishment" }, zh: { name: "皇帝", meaning: "权威，体制，结构，控制" } },
-    { id: 5, en: { name: "The Hierophant", meaning: "Spiritual wisdom, beliefs" }, zh: { name: "教皇", meaning: "精神智慧，信仰，传统，教导" } },
-    { id: 6, en: { name: "The Lovers", meaning: "Love, harmony, choices" }, zh: { name: "恋人", meaning: "爱，和谐，关系，选择" } },
-    { id: 7, en: { name: "The Chariot", meaning: "Control, willpower, success" }, zh: { name: "战车", meaning: "控制，意志力，成功，行动" } },
-    { id: 8, en: { name: "Strength", meaning: "Strength, courage, persuasion" }, zh: { name: "力量", meaning: "力量，勇气，说服，影响力" } },
-    { id: 9, en: { name: "The Hermit", meaning: "Soul-searching, introspection" }, zh: { name: "隐士", meaning: "探索内心，内省，独处，指引" } },
-    { id: 10, en: { name: "Wheel of Fortune", meaning: "Good luck, karma, destiny" }, zh: { name: "命运之轮", meaning: "好运，业力，生命周期，命运" } },
-    { id: 11, en: { name: "Justice", meaning: "Justice, fairness, truth" }, zh: { name: "正义", meaning: "正义，公平，真理，因果" } },
-    { id: 12, en: { name: "Hanged Man", meaning: "Pause, surrender, letting go" }, zh: { name: "倒吊人", meaning: "暂停，臣服，放手，新视角" } },
-    { id: 13, en: { name: "Death", meaning: "Endings, change, transformation" }, zh: { name: "死神", meaning: "结束，改变，转化，过渡" } },
-    { id: 14, en: { name: "Temperance", meaning: "Balance, moderation, patience" }, zh: { name: "节制", meaning: "平衡，适度，耐心，目标" } },
-    { id: 15, en: { name: "The Devil", meaning: "Shadow self, addiction" }, zh: { name: "恶魔", meaning: "阴暗面，执着，成瘾，束缚" } },
-    { id: 16, en: { name: "The Tower", meaning: "Sudden change, upheaval" }, zh: { name: "高塔", meaning: "突变，剧变，混乱，启示" } },
-    { id: 17, en: { name: "The Star", meaning: "Hope, faith, renewal" }, zh: { name: "星星", meaning: "希望，信念，目标，新生" } },
-    { id: 18, en: { name: "The Moon", meaning: "Illusion, fear, anxiety" }, zh: { name: "月亮", meaning: "幻觉，恐惧，焦虑，潜意识" } },
-    { id: 19, en: { name: "The Sun", meaning: "Positivity, fun, warmth" }, zh: { name: "太阳", meaning: "积极，快乐，温暖，成功" } },
-    { id: 20, en: { name: "Judgement", meaning: "Judgement, rebirth, calling" }, zh: { name: "审判", meaning: "审判，重生，内心召唤，赦免" } },
-    { id: 21, en: { name: "The World", meaning: "Completion, integration" }, zh: { name: "世界", meaning: "完成，整合，成就，圆满" } }
-];
-
-
-let currentLang = 'en';
-// 如果是手机，默认使用 Mouse/Touch 模式
-let controlMode = isMobile ? 'mouse' : 'hand'; 
-let isStarted = false;
-let deckList = [];
-
-// --- 新增：物理引擎变量 ---
-let touchStartX = 0;      // 触摸起始位置
-let lastTouchX = 0;       // 上一帧的位置
-let touchVelocity = 0;    // 当前滑动速度
-let isDragging = false;   // 是否手指按在屏幕上
-let isInertia = false;    // 是否处于惯性滑行状态
-const FRICTION = 0.95;    // 摩擦力 (0.9-0.99，越大滑得越远)
-const GRAB_THRESHOLD = 0.005; // 抓取速度阈值 (越小越严格，必须停得更稳才能抓)
-let interactionLock = false; // 交互锁：防止长按连发
-let holdTimer = null;    // 存长按的闹钟ID
-let hasRevealed = false; // 标记：这次长按是否已经成功揭示了
-// --- 新增：交互状态变量 ---
-let dragDirection = null; // 'X' (旋转) 或 'Y' (下拉)
-let pullProgress = 0;     // 下拉进度 (0.0 ~ 1.0)
-const PULL_THRESHOLD = 150; // 下拉多少像素算确认翻牌
-let isCoolingDown = false; // 全局冷却锁
-const COOLDOWN_TIME = 300; // 冷却时间 (毫秒)，0.3秒比较合适
-
-
-// Game Logic Params
-const MAX_SELECTION = 3; 
-let selectionCount = 0;
-let isRitualComplete = false;
-let chosen3DMeshes = [];
-
-
-const RADIUS = 10;
-const CARD_W = 1.5;
-const CARD_H = 2.58;
-const CORNER_R = 0.08;
-const GOLD_COLOR = 0xd4af37;
-const BG_COLOR = 0x000000;
-
-let userQuestionText = ""; // 存储用户的问题
-
-// 初始化按钮状态
-window.onload = function() {
-    setInput(controlMode);
-    updateStartScreenText();
-};
-
-function setLang(lang) {
-    currentLang = lang;
-    document.querySelectorAll('[onclick^="setLang"]').forEach(b => b.classList.remove('active'));
-    document.getElementById(`btn-${lang}`).classList.add('active');
-    updateStartScreenText();
-}
-
-function setInput(mode) {
-    controlMode = mode;
-    document.querySelectorAll('[onclick^="setInput"]').forEach(b => b.classList.remove('active'));
-    document.getElementById(`btn-${mode}`).classList.add('active');
-}
-
-function updateStartScreenText() {
-    const t = TEXTS[currentLang];
-    document.getElementById('subtitle').innerText = t.subtitle;
-    document.getElementById('lbl-language').innerText = t.lblLang;
-    document.getElementById('lbl-input').innerText = t.lblInput;
-    document.getElementById('enter-btn').innerText = t.enter;
-    document.getElementById('restart-btn').innerText = t.restart;
-    // 更新按钮文字
-    document.getElementById('btn-hand').innerText = t.btnHand;
-    document.getElementById('btn-mouse').innerText = t.btnMouse;
-}
-
-function enterExperience() {
-    // 🔴 [修改] 播放第一首 (bgm1.mp3)
-    switchMusic('bgm-intro');
-    // 1. 隐藏初始页
-    const screen = document.getElementById('start-screen');
-    screen.style.opacity = 0;
-    screen.style.pointerEvents = 'none';
-    setTimeout(() => { screen.style.display = 'none'; }, 1000);
-
-    // 🔴 [移除] 不要在这里初始化 initCamera / initMouseListeners / initTouchListeners
-    // 移到 submitQuestion 里去
-    // 这里只保留相机位置更新
-    updateCameraPos();
-
-    // 2. 显示提问页
-    const inputScreen = document.getElementById('input-screen');
-    inputScreen.style.display = 'flex';
-    
-    const t = TEXTS[currentLang];
-    document.getElementById('input-prompt').innerText = t.inputPrompt;
-    document.getElementById('user-question').placeholder = t.inputPlaceholder;
-    document.getElementById('confirm-question-btn').innerText = t.btnBegin;
-
-    setTimeout(() => {
-        inputScreen.style.opacity = 1;
-        document.getElementById('user-question').focus();
-    }, 100);
-}
-
-function submitQuestion() {
-    const inputField = document.getElementById('user-question');
-    // 🔴 [新增] 主动让输入框失去焦点，触发键盘收起
-    inputField.blur();
-    
-    // 🔴 [新增] 强制复位视图，防止页面卡在半空中
     window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
-    const val = inputField.value.trim();
-    userQuestionText = val || (currentLang === 'zh' ? "我的命运指引" : "My general destiny");
 
-    // 1. 隐藏提问页
-    const inputScreen = document.getElementById('input-screen');
-    inputScreen.style.opacity = 0;
-    // 🔴 [修改] 停止所有音乐 (或者你想继续播第一首就删掉这行)
-    switchMusic(null);
-    setTimeout(() => { inputScreen.style.display = 'none'; }, 1000);
+    // 2. Listen for input blur to close keyboard
+    // 2. 监听输入框失去焦点 (键盘收起)
+    // Wait for DOM content to load / 等 DOM 加载完再绑定
+    window.addEventListener('DOMContentLoaded', () => {
+        const inputArea = document.getElementById('user-question');
+        if (inputArea) {
+            inputArea.addEventListener('blur', () => {
+                // Delay slightly to wait for keyboard animation, then force scroll to top
+                // 延时一点点，等键盘动画收完，强制滚回顶部
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                }, 100);
+            });
+        }
+    });
 
-    // 2. 正式开始逻辑
-    isStarted = true;
-    const ui = document.getElementById('ui-layer');
-    ui.style.opacity = 1;
-    
-    updateStatusText();
-    spawnDeck(); // 先生成卡牌！
-    
-    // 🟢 [新增] 只有卡牌生成了，才允许初始化控制
-    // 这样就不会出现“除以零”的错误了
-    if (controlMode === 'hand') {
-        const videoEl = document.getElementById('video-feed');
-        videoEl.style.display = 'block'; // 先让它占据布局
-        
-        // 稍微延时让它淡入
+    // ==========================================
+    // API Configuration / API 配置区域
+    // ==========================================
+    // 🔴 Please enter your DeepSeek API Key here / 请在这里填入你的 DeepSeek API Key (sk-xxxxxxxx)
+    const API_KEY = "sk-92c5cec08baf4941a5ab5a185cd9c22f";
+
+    // DeepSeek Official API Endpoint / DeepSeek 官方接口地址
+    const API_ENDPOINT = "https://api.deepseek.com/chat/completions";
+
+    // DeepSeek Model Name / DeepSeek 模型名称
+    const API_MODEL = "deepseek-chat";
+
+    // 🔵 Proxy Toggle: Only active during final API call / 代理开关：只在最后调用 API 时生效
+    const USE_PROXY_FOR_API = true;
+
+    // Proxy Service URL (Used only for API call) / 代理服务地址 (仅在 API 调用瞬间使用)
+    const PROXY_BASE_URL = "https://corsproxy.io/?";
+
+    // Debug Mode / 调试开关
+    const DEBUG_MODE = true;
+    // ==============================================
+
+
+    // Detect if mobile device / 检测是否移动设备
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    // 1. Sparkle Effect Logic / 闪光特效逻辑
+    function createSparkles() {
+        const screen = document.getElementById('start-screen');
+        if (screen.style.display === 'none') return;
+
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+
+        // Random Position / 随机位置
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        sparkle.style.left = x + '%';
+        sparkle.style.top = y + '%';
+
+        // Random Size and Duration / 随机大小和持续时间
+        const size = Math.random() * 3 + 1;
+        sparkle.style.width = size + 'px';
+        sparkle.style.height = size + 'px';
+        sparkle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
+        screen.appendChild(sparkle);
+
+        // Remove after animation / 动画结束后移除
+        setTimeout(() => { sparkle.remove(); }, 4000);
+    }
+    setInterval(createSparkles, 200);
+
+
+    /**
+     * DATA & CONFIG
+     */
+    const TEXTS = {
+        en: {
+            subtitle: "The Virtual Ritual",
+            lblLang: "Language",
+            lblInput: "Input Method",
+            enter: "ENTER VOID",
+            statusWave: "Wave to Turn · Pinch Center Card · Clench to Reveal",
+            statusMouse: "Move to Turn · Hold to Grab · Long Press to Reveal",
+            statusTouch: "Swipe to Turn · Pull Down to Grab / Reveal",
+            statusFist: "FIST TO REVEAL",
+            statusSpace: "SPACE / HOLD TO REVEAL",
+            statusReveal: "OBSERVING FATE...",
+            statusDone: "RITUAL COMPLETE",
+            rev: "Reversed",
+            restart: "RESTART RITUAL",
+            btnHand: "Hand Gesture ✋",
+            btnMouse: isMobile ? "Touch Control 👆" : "Mouse Control 🖱️",
+            inputPrompt: "What do you seek?",
+            inputPlaceholder: "Enter your query...",
+            btnBegin: "SEEK ANSWER"
+        },
+        zh: {
+            subtitle: "虚拟塔罗仪式",
+            lblLang: "语言设置",
+            lblInput: "操控方式",
+            enter: "进入虚空",
+            statusWave: "挥手转动牌阵 · 捏合手指选中 · 握拳揭示",
+            statusMouse: "移动鼠标转动 · 按住左键抓取 · 长按揭示",
+            statusTouch: "左右滑动转动 · 下拉抓取/揭示",
+            statusFist: "握拳揭示命运",
+            statusSpace: "按空格 / 长按揭示",
+            statusReveal: "正在观测命运...",
+            statusDone: "仪式完成",
+            rev: "逆位",
+            restart: "重新开始仪式",
+            btnHand: "手势控制 ✋",
+            btnMouse: isMobile ? "触屏控制 👆" : "鼠标控制 🖱️",
+            inputPrompt: "心中所问",
+            inputPlaceholder: "在此输入...",
+            btnBegin: "开始探寻"
+        }
+    };
+
+    // Basic Data (Full 22 cards) / 基础数据 (完整22张)
+    const RWS_DATA = [
+        { id: 0,  en: { name: "The Fool", meaning: "New beginnings, innocence, spontaneity" }, zh: { name: "愚者", meaning: "新的开始，天真，自发性，冒险" } },
+        { id: 1,  en: { name: "The Magician", meaning: "Manifestation, resourcefulness, power" }, zh: { name: "魔术师", meaning: "显化，资源丰富，力量，创造力" } },
+        { id: 2,  en: { name: "High Priestess", meaning: "Intuition, sacred knowledge" }, zh: { name: "女祭司", meaning: "直觉，神圣知识，潜意识，神秘" } },
+        { id: 3,  en: { name: "The Empress", meaning: "Femininity, beauty, nature" }, zh: { name: "皇后", meaning: "女性力量，美丽，自然，孕育" } },
+        { id: 4,  en: { name: "The Emperor", meaning: "Authority, establishment" }, zh: { name: "皇帝", meaning: "权威，体制，结构，控制" } },
+        { id: 5,  en: { name: "The Hierophant", meaning: "Spiritual wisdom, beliefs" }, zh: { name: "教皇", meaning: "精神智慧，信仰，传统，教导" } },
+        { id: 6,  en: { name: "The Lovers", meaning: "Love, harmony, choices" }, zh: { name: "恋人", meaning: "爱，和谐，关系，选择" } },
+        { id: 7,  en: { name: "The Chariot", meaning: "Control, willpower, success" }, zh: { name: "战车", meaning: "控制，意志力，成功，行动" } },
+        { id: 8,  en: { name: "Strength", meaning: "Strength, courage, persuasion" }, zh: { name: "力量", meaning: "力量，勇气，说服，影响力" } },
+        { id: 9,  en: { name: "The Hermit", meaning: "Soul-searching, introspection" }, zh: { name: "隐士", meaning: "探索内心，内省，独处，指引" } },
+        { id: 10, en: { name: "Wheel of Fortune", meaning: "Good luck, karma, destiny" }, zh: { name: "命运之轮", meaning: "好运，业力，生命周期，命运" } },
+        { id: 11, en: { name: "Justice", meaning: "Justice, fairness, truth" }, zh: { name: "正义", meaning: "正义，公平，真理，因果" } },
+        { id: 12, en: { name: "Hanged Man", meaning: "Pause, surrender, letting go" }, zh: { name: "倒吊人", meaning: "暂停，臣服，放手，新视角" } },
+        { id: 13, en: { name: "Death", meaning: "Endings, change, transformation" }, zh: { name: "死神", meaning: "结束，改变，转化，过渡" } },
+        { id: 14, en: { name: "Temperance", meaning: "Balance, moderation, patience" }, zh: { name: "节制", meaning: "平衡，适度，耐心，目标" } },
+        { id: 15, en: { name: "The Devil", meaning: "Shadow self, addiction" }, zh: { name: "恶魔", meaning: "阴暗面，执着，成瘾，束缚" } },
+        { id: 16, en: { name: "The Tower", meaning: "Sudden change, upheaval" }, zh: { name: "高塔", meaning: "突变，剧变，混乱，启示" } },
+        { id: 17, en: { name: "The Star", meaning: "Hope, faith, renewal" }, zh: { name: "星星", meaning: "希望，信念，目标，新生" } },
+        { id: 18, en: { name: "The Moon", meaning: "Illusion, fear, anxiety" }, zh: { name: "月亮", meaning: "幻觉，恐惧，焦虑，潜意识" } },
+        { id: 19, en: { name: "The Sun", meaning: "Positivity, fun, warmth" }, zh: { name: "太阳", meaning: "积极，快乐，温暖，成功" } },
+        { id: 20, en: { name: "Judgement", meaning: "Judgement, rebirth, calling" }, zh: { name: "审判", meaning: "审判，重生，内心召唤，赦免" } },
+        { id: 21, en: { name: "The World", meaning: "Completion, integration" }, zh: { name: "世界", meaning: "完成，整合，成就，圆满" } }
+    ];
+
+
+    let currentLang = 'en';
+    // If mobile, default to Mouse/Touch mode / 如果是手机，默认使用 Mouse/Touch 模式
+    let controlMode = isMobile ? 'mouse' : 'hand';
+    let isStarted = false;
+    let deckList = [];
+
+    // --- New: Physics Engine Variables / 新增：物理引擎变量 ---
+    let touchStartX = 0;      // Touch start position / 触摸起始位置
+    let lastTouchX = 0;       // Position in last frame / 上一帧的位置
+    let touchVelocity = 0;    // Current slide velocity / 当前滑动速度
+    let isDragging = false;   // Is finger on screen / 是否手指按在屏幕上
+    let isInertia = false;    // Is in inertia state / 是否处于惯性滑行状态
+    const FRICTION = 0.95;    // Friction (0.9-0.99, higher slides further) / 摩擦力
+    const GRAB_THRESHOLD = 0.005; // Grab speed threshold (lower = stricter stop required) / 抓取速度阈值
+    let interactionLock = false; // Interaction lock / 交互锁：防止长按连发
+    let holdTimer = null;    // Timer ID for long press / 存长按的闹钟ID
+    let hasRevealed = false; // Flag: Was reveal successful? / 标记：这次长按是否已经成功揭示了
+
+    // --- New: Interaction State Variables / 新增：交互状态变量 ---
+    let dragDirection = null; // 'X' (Rotate) or 'Y' (Pull) / 'X' (旋转) 或 'Y' (下拉)
+    let pullProgress = 0;     // Pull progress (0.0 ~ 1.0) / 下拉进度
+    const PULL_THRESHOLD = 150; // Pixels to pull to confirm flip / 下拉多少像素算确认翻牌
+    let isCoolingDown = false; // Global cooldown lock / 全局冷却锁
+    const COOLDOWN_TIME = 300; // Cooldown time (ms) / 冷却时间 (毫秒)
+
+
+    // Game Logic Params
+    const MAX_SELECTION = 3;
+    let selectionCount = 0;
+    let isRitualComplete = false;
+    let chosen3DMeshes = [];
+
+
+    const RADIUS = 10;
+    const CARD_W = 1.5;
+    const CARD_H = 2.58;
+    const CORNER_R = 0.08;
+    const GOLD_COLOR = 0xd4af37;
+    const BG_COLOR = 0x000000;
+
+    let userQuestionText = ""; // Store user's question / 存储用户的问题
+
+    // Initialize button states / 初始化按钮状态
+    window.onload = function() {
+        setInput(controlMode);
+        updateStartScreenText();
+    };
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('[onclick^="setLang"]').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${lang}`).classList.add('active');
+        updateStartScreenText();
+    }
+
+    function setInput(mode) {
+        controlMode = mode;
+        document.querySelectorAll('[onclick^="setInput"]').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${mode}`).classList.add('active');
+    }
+
+    function updateStartScreenText() {
+        const t = TEXTS[currentLang];
+        document.getElementById('subtitle').innerText = t.subtitle;
+        document.getElementById('lbl-language').innerText = t.lblLang;
+        document.getElementById('lbl-input').innerText = t.lblInput;
+        document.getElementById('enter-btn').innerText = t.enter;
+        document.getElementById('restart-btn').innerText = t.restart;
+        // Update button text / 更新按钮文字
+        document.getElementById('btn-hand').innerText = t.btnHand;
+        document.getElementById('btn-mouse').innerText = t.btnMouse;
+    }
+
+    function enterExperience() {
+        // 🔴 [Mod] Play first track / [修改] 播放第一首 (bgm1.mp3)
+        switchMusic('bgm-intro');
+        // 1. Hide start screen / 隐藏初始页
+        const screen = document.getElementById('start-screen');
+        screen.style.opacity = 0;
+        screen.style.pointerEvents = 'none';
+        setTimeout(() => { screen.style.display = 'none'; }, 1000);
+
+        // 🔴 [Remove] Do not init Camera/Mouse/Touch listeners here
+        // Moved to submitQuestion
+        // Only keep camera position update
+        // 移到 submitQuestion 里去，这里只保留相机位置更新
+        updateCameraPos();
+
+        // 2. Show question screen / 显示提问页
+        const inputScreen = document.getElementById('input-screen');
+        inputScreen.style.display = 'flex';
+
+        const t = TEXTS[currentLang];
+        document.getElementById('input-prompt').innerText = t.inputPrompt;
+        document.getElementById('user-question').placeholder = t.inputPlaceholder;
+        document.getElementById('confirm-question-btn').innerText = t.btnBegin;
+
         setTimeout(() => {
-            videoEl.style.opacity = 0.8; // 不完全不透明，保留一点通透感
+            inputScreen.style.opacity = 1;
+            document.getElementById('user-question').focus();
         }, 100);
-        
-        initCamera(); // 启动 Mediapipe
-    } else {
-        initMouseListeners();
-        initTouchListeners();
-        initHUDListeners(); // 别忘了 HUD 监听
     }
 
-    // 显示指引
-   toggleGuides(true);
-}
+    function submitQuestion() {
+        const inputField = document.getElementById('user-question');
+        // 🔴 [New] Blur input to close keyboard / [新增] 主动让输入框失去焦点，触发键盘收起
+        inputField.blur();
 
-/**
- * THREE.JS SCENE SETUP
- */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(BG_COLOR);
-scene.fog = new THREE.FogExp2(BG_COLOR, 0.012);
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
-// 初始位置由 updateCameraPos 决定
+        // 🔴 [New] Force reset view / [新增] 强制复位视图，防止页面卡在半空中
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        const val = inputField.value.trim();
+        userQuestionText = val || (currentLang === 'zh' ? "我的命运指引" : "My general destiny");
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-document.getElementById('canvas-container').appendChild(renderer.domElement);
+        // 1. Hide question screen / 隐藏提问页
+        const inputScreen = document.getElementById('input-screen');
+        inputScreen.style.opacity = 0;
+        // 🔴 [Mod] Stop music (or keep playing if desired) / [修改] 停止所有音乐
+        switchMusic(null);
+        setTimeout(() => { inputScreen.style.display = 'none'; }, 1000);
 
-const texLoader = new THREE.TextureLoader();
-// ⚠️ 静态资源加载：直接加载本地图片，不走代理
-const texBackGlobal = texLoader.load('./cards/back.png'); 
-texBackGlobal.anisotropy = renderer.capabilities.getMaxAnisotropy();
-texBackGlobal.center.set(0.5, 0.5);
+        // 2. Start Logic / 正式开始逻辑
+        isStarted = true;
+        const ui = document.getElementById('ui-layer');
+        ui.style.opacity = 1;
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-scene.add(ambientLight);
-const frontLight = new THREE.DirectionalLight(0xffeaac, 0.6);
-frontLight.position.set(0, 2, 5);
-scene.add(frontLight);
+        updateStatusText();
+        spawnDeck(); // Generate cards first! / 先生成卡牌！
 
-// Stars
-const starGeo = new THREE.BufferGeometry();
-const starPos = new Float32Array(2500*3);
-for(let i=0;i<2500;i++) {
-    const r = 20 + Math.random()*40;
-    const theta = Math.random()*Math.PI*2;
-    const phi = Math.acos(Math.random()*2-1);
-    starPos[i*3] = r*Math.sin(phi)*Math.cos(theta);
-    starPos[i*3+1] = r*Math.sin(phi)*Math.sin(theta);
-    starPos[i*3+2] = r*Math.cos(phi);
-}
-starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-const starMat = new THREE.PointsMaterial({color: 0xcccccc, size: 0.06});
-const starSystem = new THREE.Points(starGeo, starMat);
-scene.add(starSystem);
+        // 🟢 [New] Only init controls after deck spawn / [新增] 只有卡牌生成了，才允许初始化控制
+        // Prevent "divide by zero" errors / 这样就不会出现“除以零”的错误了
+        if (controlMode === 'hand') {
+            document.getElementById('video-feed').style.opacity = 0.3;
+            initCamera();
+        } else {
+            initMouseListeners();
+            initTouchListeners();
+            initHUDListeners(); // Don't forget HUD listeners / 别忘了 HUD 监听
+        }
 
-/**
- * DECK CONSTRUCTION
- */
-const deckGroup = new THREE.Group();
-scene.add(deckGroup);
-let cardObjects = [];
-
-const shape = new THREE.Shape();
-const w = CARD_W/2, h = CARD_H/2, r = CORNER_R;
-shape.moveTo(-w+r, -h); shape.lineTo(w-r, -h); shape.quadraticCurveTo(w, -h, w, -h+r);
-shape.lineTo(w, h-r); shape.quadraticCurveTo(w, h, w-r, h);
-shape.lineTo(-w+r, h); shape.quadraticCurveTo(-w, h, -w, h-r);
-shape.lineTo(-w, -h+r); shape.quadraticCurveTo(-w, -h, -w+r, -h);
-const faceGeo = new THREE.ShapeGeometry(shape);
-
-function fixUVs(geometry) {
-    const posAttribute = geometry.attributes.position;
-    const uvAttribute = geometry.attributes.uv;
-    for (let i = 0; i < posAttribute.count; i++) {
-        const x = posAttribute.getX(i);
-        const y = posAttribute.getY(i);
-        uvAttribute.setXY(i, (x / CARD_W) + 0.5, (y / CARD_H) + 0.5);
+        // Show guides / 显示指引
+        toggleGuides(true);
     }
-    uvAttribute.needsUpdate = true;
-}
-fixUVs(faceGeo);
 
-const matBase = { roughness: 0.6, metalness: 0.1 };
-const edgeMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, ...matBase });
-const outlineGeo = new THREE.EdgesGeometry(faceGeo);
-const outlineMat = new THREE.LineBasicMaterial({ color: GOLD_COLOR, linewidth: 2 });
+    /**
+     * THREE.JS SCENE SETUP
+     */
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(BG_COLOR);
+    scene.fog = new THREE.FogExp2(BG_COLOR, 0.012);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    // Initial position determined by updateCameraPos / 初始位置由 updateCameraPos 决定
 
-function createCardMesh(data, index, total) {
-    const group = new THREE.Group();
-    // ⚠️ 这里加载卡牌纹理：使用本地相对路径，不走代理
-    const texFront = texLoader.load(data.url);
-    texFront.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    texFront.center.set(0.5, 0.5);
-    
-    const matBack = new THREE.MeshStandardMaterial({ map: texBackGlobal, ...matBase });
-    const matFront = new THREE.MeshStandardMaterial({ map: texFront, ...matBase });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    const meshBack = new THREE.Mesh(faceGeo, matBack);
-    meshBack.position.z = 0.005; 
-    const meshFront = new THREE.Mesh(faceGeo, matFront);
-    meshFront.rotation.y = Math.PI;
-    meshFront.position.z = -0.005;
-    const meshFiller = new THREE.Mesh(faceGeo, edgeMat);
-    meshFiller.scale.set(0.995, 0.995, 1);
-    
-    // 恢复高光线框 (Outline)，用于标记“中轴卡”
-    //const outlineMesh = new THREE.LineSegments(outlineGeo, outlineMat);
-    //outlineMesh.position.z = 0.006; 
-    //outlineMesh.visible = false; // 默认隐藏
-    //group.userData.outline = outlineMesh; // 存入 userData 方便后续调用
+    const texLoader = new THREE.TextureLoader();
+    // ⚠️ Static Asset Loading: Load local images directly, bypass proxy
+    // ⚠️ 静态资源加载：直接加载本地图片，不走代理
+    const texBackGlobal = texLoader.load('./cards/back.png');
+    texBackGlobal.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    texBackGlobal.center.set(0.5, 0.5);
 
-    group.add(meshBack, meshFront, meshFiller);
-    
-    const step = (Math.PI * 2) / total;
-    const theta = index * step;
-    group.position.x = RADIUS * Math.sin(theta);
-    group.position.z = -RADIUS * Math.cos(theta);
-    group.lookAt(0, 0, 0);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
+    const frontLight = new THREE.DirectionalLight(0xffeaac, 0.6);
+    frontLight.position.set(0, 2, 5);
+    scene.add(frontLight);
 
-    group.userData = { id: data.id, rawData: data, state: 'IDLE', theta: theta, isChosen: false };
-    return group;
-}
+    // Stars
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(2500 * 3);
+    for (let i = 0; i < 2500; i++) {
+        const r = 20 + Math.random() * 40;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(Math.random() * 2 - 1);
+        starPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+        starPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+        starPos[i * 3 + 2] = r * Math.cos(phi);
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xcccccc, size: 0.06 });
+    const starSystem = new THREE.Points(starGeo, starMat);
+    scene.add(starSystem);
 
-function spawnDeck() {
-    if(!isStarted) return;
-   // 判断是否是竖屏（手机）
-    const isPortrait = window.innerHeight > window.innerWidth;
-    
-    // 设置高度
-    deckGroup.position.y = isPortrait ? 2.0 : 0; 
-    
-    deckGroup.clear(); cardObjects = [];
-    
-    // ⚠️ 生成本地路径数据
-    deckList = RWS_DATA.map(d => ({
-        ...d,
-        url: `./cards/${d.id}.png` // 相对路径，浏览器直接加载
-    }));
+    /**
+     * DECK CONSTRUCTION
+     */
+    const deckGroup = new THREE.Group();
+    scene.add(deckGroup);
+    let cardObjects = [];
 
-    deckList.sort(() => Math.random() - 0.5);
-    
-    deckList.forEach((item, i) => {
-        const card = createCardMesh(item, i, deckList.length);
-        deckGroup.add(card);
-        cardObjects.push(card);
-    });
-    document.getElementById('loader').style.display = 'none';
-}
+    const shape = new THREE.Shape();
+    const w = CARD_W / 2, h = CARD_H / 2, r = CORNER_R;
+    shape.moveTo(-w + r, -h); shape.lineTo(w - r, -h); shape.quadraticCurveTo(w, -h, w, -h + r);
+    shape.lineTo(w, h - r); shape.quadraticCurveTo(w, h, w - r, h);
+    shape.lineTo(-w + r, h); shape.quadraticCurveTo(-w, h, -w, h - r);
+    shape.lineTo(-w, -h + r); shape.quadraticCurveTo(-w, -h, -w + r, -h);
+    const faceGeo = new THREE.ShapeGeometry(shape);
 
-/**
- * INTERACTION LOGIC
- */
-let handState = 'OPEN';
-let handX = 0;
-let ringRotation = 0;
-let activeCard = null;
-let centerCard = null;
+    function fixUVs(geometry) {
+        const posAttribute = geometry.attributes.position;
+        const uvAttribute = geometry.attributes.uv;
+        for (let i = 0; i < posAttribute.count; i++) {
+            const x = posAttribute.getX(i);
+            const y = posAttribute.getY(i);
+            uvAttribute.setXY(i, (x / CARD_W) + 0.5, (y / CARD_H) + 0.5);
+        }
+        uvAttribute.needsUpdate = true;
+    }
+    fixUVs(faceGeo);
 
-// --- 修改后：带速度限制的鼠标监听 ---
-function initMouseListeners() {
-    window.addEventListener('mousemove', (e) => {
-        handX = (e.clientX / window.innerWidth) * 2 - 1;
-    });
+    const matBase = { roughness: 0.6, metalness: 0.1 };
+    const edgeMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, ...matBase });
+    const outlineGeo = new THREE.EdgesGeometry(faceGeo);
+    const outlineMat = new THREE.LineBasicMaterial({ color: GOLD_COLOR, linewidth: 2 });
 
-    window.addEventListener('mousedown', (e) => {
-        if(e.button !== 0) return;
+    function createCardMesh(data, index, total) {
+        const group = new THREE.Group();
+        // ⚠️ Load texture from local path / 这里加载卡牌纹理：使用本地相对路径，不走代理
+        const texFront = texLoader.load(data.url);
+        texFront.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texFront.center.set(0.5, 0.5);
 
-        // 基础位置检查
-        const isHoveringCenter = Math.abs(handX) < 0.2; 
-        
-        // 🛑 核心修改：速度检测
-        // 如果正在惯性滑行，且速度太快 -> 禁止点击
-        const isTooFast = isInertia && Math.abs(touchVelocity) > GRAB_THRESHOLD;
+        const matBack = new THREE.MeshStandardMaterial({ map: texBackGlobal, ...matBase });
+        const matFront = new THREE.MeshStandardMaterial({ map: texFront, ...matBase });
 
-        if (isHoveringCenter && !isTooFast) {
-            // 只有这里才允许刹车
-            if (isInertia) {
-                isInertia = false;
-                touchVelocity = 0;
-                snapToGrid();
-            }
-            handState = 'PINCH'; 
-        } 
-        updateCursorIcon();
-    });
+        const meshBack = new THREE.Mesh(faceGeo, matBack);
+        meshBack.position.z = 0.005;
+        const meshFront = new THREE.Mesh(faceGeo, matFront);
+        meshFront.rotation.y = Math.PI;
+        meshFront.position.z = -0.005;
+        const meshFiller = new THREE.Mesh(faceGeo, edgeMat);
+        meshFiller.scale.set(0.995, 0.995, 1);
 
-    window.addEventListener('mouseup', () => {
-        handState = 'OPEN'; 
-        updateCursorIcon();
-    });
+        group.add(meshBack, meshFront, meshFiller);
 
-    // 键盘逻辑保持不变
-    window.addEventListener('keydown', (e) => {
-        if(e.code === 'Space') handState = 'FIST'; 
-        updateCursorIcon();
-    });
-    window.addEventListener('keyup', (e) => {
-        if(e.code === 'Space' && handState === 'FIST') handState = 'PINCH'; 
-        else if (e.code === 'Space') handState = 'OPEN';
-        updateCursorIcon();
-    });
-}
+        const step = (Math.PI * 2) / total;
+        const theta = index * step;
+        group.position.x = RADIUS * Math.sin(theta);
+        group.position.z = -RADIUS * Math.cos(theta);
+        group.lookAt(0, 0, 0);
 
-function initTouchListeners() {
-    const container = document.getElementById('canvas-container');
-    
-    // 1. 触摸开始
-    container.addEventListener('touchstart', (e) => {
-        // 🛑 如果是摄像头手势模式，禁用触控逻辑，防止打架
-        if (controlMode === 'hand') return;
+        group.userData = { id: data.id, rawData: data, state: 'IDLE', theta: theta, isChosen: false };
+        return group;
+    }
 
-        const touch = e.touches[0];
-        isDragging = true;
-        isInertia = false; 
-        touchVelocity = 0; 
-        touchStartX = touch.clientX;
-        lastTouchX = touch.clientX;
-        touchStartY = touch.clientY;
-        dragDirection = null; 
-        pullProgress = 0;
-    }, { passive: false });
+    function spawnDeck() {
+        if (!isStarted) return;
+        // Check if portrait (mobile) / 判断是否是竖屏（手机）
+        const isPortrait = window.innerHeight > window.innerWidth;
 
-    // 2. 触摸移动
-    container.addEventListener('touchmove', (e) => {
-        if (controlMode === 'hand') return; // 🛑 禁用
-        e.preventDefault(); 
-        if (!isDragging) return;
+        // Set height / 设置高度
+        deckGroup.position.y = isPortrait ? 2.0 : 0;
 
-        const touch = e.touches[0];
-        const dx = touch.clientX - touchStartX;
-        const dy = touch.clientY - touchStartY;
-        
-        // --- A. 方向判断 ---
-        if (!dragDirection) {
-            if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    dragDirection = 'X';
-                } 
-                else if (dy > 0 && centerCard && selectionCount < MAX_SELECTION) {
-                    dragDirection = 'Y';
+        deckGroup.clear();
+        cardObjects = [];
+
+        // ⚠️ Generate local path data / 生成本地路径数据
+        deckList = RWS_DATA.map(d => ({
+            ...d,
+            url: `./cards/${d.id}.png` // Relative path / 相对路径，浏览器直接加载
+        }));
+
+        deckList.sort(() => Math.random() - 0.5);
+
+        deckList.forEach((item, i) => {
+            const card = createCardMesh(item, i, deckList.length);
+            deckGroup.add(card);
+            cardObjects.push(card);
+        });
+        document.getElementById('loader').style.display = 'none';
+    }
+
+    /**
+     * INTERACTION LOGIC
+     */
+    let handState = 'OPEN';
+    let handX = 0;
+    let ringRotation = 0;
+    let activeCard = null;
+    let centerCard = null;
+
+    // --- Modified: Mouse Listeners with Speed Limit ---
+    // --- 修改后：带速度限制的鼠标监听 ---
+    function initMouseListeners() {
+        window.addEventListener('mousemove', (e) => {
+            handX = (e.clientX / window.innerWidth) * 2 - 1;
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+
+            // Basic Position Check / 基础位置检查
+            const isHoveringCenter = Math.abs(handX) < 0.2;
+
+            // 🛑 Core Mod: Speed Detection / 核心修改：速度检测
+            // If dragging with inertia and speed is high -> disable click / 如果正在惯性滑行，且速度太快 -> 禁止点击
+            const isTooFast = isInertia && Math.abs(touchVelocity) > GRAB_THRESHOLD;
+
+            if (isHoveringCenter && !isTooFast) {
+                // Only allow brake here / 只有这里才允许刹车
+                if (isInertia) {
                     isInertia = false;
                     touchVelocity = 0;
-                    snapToGrid(); 
-                    if (!activeCard) selectCard(centerCard);
+                    snapToGrid();
                 }
+                handState = 'PINCH';
             }
-        }
+            updateCursorIcon();
+        });
 
-        // --- B. 执行逻辑 ---
-        if (dragDirection === 'X') {
-            const currentX = touch.clientX;
-            const deltaX = currentX - lastTouchX;
-            lastTouchX = currentX;
-            touchVelocity = deltaX * 0.005; 
-            ringRotation += touchVelocity * 3.0;
-            deckGroup.rotation.y = ringRotation;
-        } 
-        else if (dragDirection === 'Y') {
-            let progress = dy / PULL_THRESHOLD;
-            progress = Math.min(Math.max(progress, 0), 1.2);
-            pullProgress = progress;
-            if (activeCard) updatePullingVisuals(activeCard, progress);
-        }
-    }, { passive: false });
+        window.addEventListener('mouseup', () => {
+            handState = 'OPEN';
+            updateCursorIcon();
+        });
 
-    // 3. 触摸结束
-    container.addEventListener('touchend', (e) => {
-        if (controlMode === 'hand') return; // 🛑 禁用
-        isDragging = false;
-        
-        if (dragDirection === 'X') {
-            if (Math.abs(touchVelocity) > 0.002) isInertia = true;
-            else snapToGrid(); 
-        } 
-        else if (dragDirection === 'Y') {
-            if (pullProgress > 0.8) {
-                if (activeCard) revealCard(activeCard);
-            } else {
-                if (activeCard) returnCard(activeCard);
-            }
+        // Keyboard Logic remains same / 键盘逻辑保持不变
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') handState = 'FIST';
+            updateCursorIcon();
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' && handState === 'FIST') handState = 'PINCH';
+            else if (e.code === 'Space') handState = 'OPEN';
+            updateCursorIcon();
+        });
+    }
+
+    function initTouchListeners() {
+        const container = document.getElementById('canvas-container');
+
+        // 1. Touch Start / 触摸开始
+        container.addEventListener('touchstart', (e) => {
+            // 🛑 Disable touch in Hand Gesture mode / 如果是摄像头手势模式，禁用触控逻辑
+            if (controlMode === 'hand') return;
+
+            const touch = e.touches[0];
+            isDragging = true;
+            isInertia = false;
+            touchVelocity = 0;
+            touchStartX = touch.clientX;
+            lastTouchX = touch.clientX;
+            touchStartY = touch.clientY;
+            dragDirection = null;
             pullProgress = 0;
+        }, { passive: false });
+
+        // 2. Touch Move / 触摸移动
+        container.addEventListener('touchmove', (e) => {
+            if (controlMode === 'hand') return; // 🛑 Disable / 禁用
+            e.preventDefault();
+            if (!isDragging) return;
+
+            const touch = e.touches[0];
+            const dx = touch.clientX - touchStartX;
+            const dy = touch.clientY - touchStartY;
+
+            // --- A. Direction Check / 方向判断 ---
+            if (!dragDirection) {
+                if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        dragDirection = 'X';
+                    } else if (dy > 0 && centerCard && selectionCount < MAX_SELECTION) {
+                        dragDirection = 'Y';
+                        isInertia = false;
+                        touchVelocity = 0;
+                        snapToGrid();
+                        if (!activeCard) selectCard(centerCard);
+                    }
+                }
+            }
+
+            // --- B. Execution Logic / 执行逻辑 ---
+            if (dragDirection === 'X') {
+                const currentX = touch.clientX;
+                const deltaX = currentX - lastTouchX;
+                lastTouchX = currentX;
+                touchVelocity = deltaX * 0.005;
+                ringRotation += touchVelocity * 3.0;
+                deckGroup.rotation.y = ringRotation;
+            } else if (dragDirection === 'Y') {
+                let progress = dy / PULL_THRESHOLD;
+                progress = Math.min(Math.max(progress, 0), 1.2);
+                pullProgress = progress;
+                if (activeCard) updatePullingVisuals(activeCard, progress);
+            }
+        }, { passive: false });
+
+        // 3. Touch End / 触摸结束
+        container.addEventListener('touchend', (e) => {
+            if (controlMode === 'hand') return; // 🛑 Disable / 禁用
+            isDragging = false;
+
+            if (dragDirection === 'X') {
+                if (Math.abs(touchVelocity) > 0.002) isInertia = true;
+                else snapToGrid();
+            } else if (dragDirection === 'Y') {
+                if (pullProgress > 0.8) {
+                    if (activeCard) revealCard(activeCard);
+                } else {
+                    if (activeCard) returnCard(activeCard);
+                }
+                pullProgress = 0;
+            }
+            dragDirection = null;
+        });
+    }
+
+    // --- Helper: Visuals for Pulling / 辅助：下拉时的视觉计算 ---
+    function updatePullingVisuals(card, progress) {
+        // Target Position Calculation:
+        // Z: Pull from (-RADIUS) to near eye (-2.2)
+        // Y: Lower slightly as pulled
+        // 目标位置计算：
+        // Z轴：从原位 (-RADIUS) 拉近到眼前 (-2.2)
+        // Y轴：随着下拉，稍微往下沉一点点，符合物理直觉
+
+        // 0% Position (On Axis) / 0% 的位置 (在中轴上)
+        const startZ = -RADIUS;
+        const startY = 0;
+
+        // 100% Position (Confirmed) / 100% 的位置 (眼前确认位)
+        const endZ = isMobile ? -1.8 : -1.5;
+        const endY = 0; // Slightly lower / 拉到屏幕下方一点
+
+        // Interpolation / 插值计算
+        const currentZ = THREE.MathUtils.lerp(startZ, endZ, progress);
+        const currentY = THREE.MathUtils.lerp(startY, endY, progress * 0.5); // Y axis moves less / Y轴动少一点
+
+        // Rotation: Tilt slightly during pull / 旋转：下拉过程中，卡片可以稍微翘起一点 (X轴旋转)
+        const targetRotX = progress * 0.5; // Slight tilt up / 微微抬头
+
+        card.position.set(0, currentY, currentZ);
+        card.rotation.x = targetRotX;
+
+        // Temporarily take over rotation / 此时我们要暂时接管 rotation，防止 handleInput 里的 lerp 打架
+        card.userData.isManualDragging = true;
+    }
+
+    // --- New: UI Visibility Control / 新增：UI 显隐控制函数 ---
+    function toggleGuides(show) {
+        const axis = document.getElementById('axis-markers');
+        const hud = document.getElementById('hud-center');
+
+        // Axis line: semitransparent(0.4) vs hidden(0) / 中轴线平时是半透明(0.4)，隐藏时是0
+        axis.style.transition = 'opacity 0.5s';
+        axis.style.opacity = show ? '0.4' : '0';
+
+        // HUD: visible(1) vs hidden(0) / HUD平时是1，隐藏时是0
+        hud.style.transition = 'opacity 0.5s';
+        hud.style.opacity = show ? '1' : '0';
+
+        // Disable clicks when hidden / 隐藏时禁用点击，防止误触
+        hud.style.pointerEvents = show ? 'auto' : 'none';
+    }
+
+    // ==========================================
+    // Music Control System (Dual Track)
+    // 音乐控制系统 (双音轨版)
+    // ==========================================
+
+    let currentAudioId = null; // Current track ('bgm-intro' or 'bgm-final') / 当前应该播放哪首
+    let isGlobalMuted = false; // Global mute state / 全局静音状态
+
+    // 1. Core Switch Function / 切换音轨核心函数
+    function switchMusic(newId) {
+        // Stop all music first / 先停止所有音乐
+        document.getElementById('bgm-intro').pause();
+        document.getElementById('bgm-final').pause();
+
+        // If null, mute/stop / 如果传入 null，说明要静音/停止
+        if (!newId) {
+            currentAudioId = null;
+            updateMusicBtnState(false); // Stop rotation / 按钮停止旋转
+            return;
         }
-        dragDirection = null;
-    });
-}
 
-// --- 辅助：下拉时的视觉计算 ---
-function updatePullingVisuals(card, progress) {
-    // 目标位置计算：
-    // Z轴：从原位 (-RADIUS) 拉近到眼前 (-2.2)
-    // Y轴：随着下拉，稍微往下沉一点点，符合物理直觉
-    
-    // 0% 的位置 (在中轴上)
-    const startZ = -RADIUS; 
-    const startY = 0;
-    
-    // 100% 的位置 (眼前确认位)
-    const endZ = isMobile ? -1.8 : -1.5;
-    const endY = 0; // 拉到屏幕下方一点
-    
-    // 插值计算
-    const currentZ = THREE.MathUtils.lerp(startZ, endZ, progress);
-    const currentY = THREE.MathUtils.lerp(startY, endY, progress * 0.5); // Y轴动少一点
-    
-    // 旋转：下拉过程中，卡片可以稍微翘起一点 (X轴旋转)
-    const targetRotX = progress * 0.5; // 微微抬头
-    
-    card.position.set(0, currentY, currentZ);
-    card.rotation.x = targetRotX;
-    
-    // 此时我们要暂时接管 rotation，防止 handleInput 里的 lerp 打架
-    card.userData.isManualDragging = true;
-}
+        currentAudioId = newId;
+        const audio = document.getElementById(newId);
+        audio.currentTime = 0; // From start / 从头开始
+        audio.volume = 0.5;    // Set volume / 设置音量
 
-// --- 新增：UI 显隐控制函数 ---
-function toggleGuides(show) {
-    const axis = document.getElementById('axis-markers');
-    const hud = document.getElementById('hud-center');
-    
-    // 中轴线平时是半透明(0.4)，隐藏时是0
-    axis.style.transition = 'opacity 0.5s';
-    axis.style.opacity = show ? '0.4' : '0';
-    
-    // HUD平时是1，隐藏时是0
-    hud.style.transition = 'opacity 0.5s';
-    hud.style.opacity = show ? '1' : '0';
-    
-    // 隐藏时禁用点击，防止误触
-    hud.style.pointerEvents = show ? 'auto' : 'none';
-}
-
-// ================= 音乐控制系统 (双音轨版) =================
-
-let currentAudioId = null; // 当前应该播放哪首 ( 'bgm-intro' 或 'bgm-final' )
-let isGlobalMuted = false; // 全局静音状态 (用户手动点击开关)
-
-// 1. 切换音轨核心函数
-function switchMusic(newId) {
-    // 先停止所有音乐
-    document.getElementById('bgm-intro').pause();
-    document.getElementById('bgm-final').pause();
-    
-    // 如果传入 null，说明要静音/停止
-    if (!newId) {
-        currentAudioId = null;
-        updateMusicBtnState(false); // 按钮停止旋转
-        return;
-    }
-
-    currentAudioId = newId;
-    const audio = document.getElementById(newId);
-    audio.currentTime = 0; // 从头开始
-    audio.volume = 0.5;    // 设置音量
-
-    // 如果用户没有手动静音，就开始播放
-    if (!isGlobalMuted) {
-        audio.play().catch(e => console.log("等待交互播放"));
-        updateMusicBtnState(true); // 按钮开始旋转
-    } else {
-        updateMusicBtnState(false); // 保持静音图标
-    }
-}
-
-// 2. 用户点击右上角按钮
-function toggleMusic() {
-    const btn = document.getElementById('music-control');
-    isGlobalMuted = !isGlobalMuted; // 切换状态
-
-    if (currentAudioId) {
-        const audio = document.getElementById(currentAudioId);
-        if (isGlobalMuted) {
-            audio.pause();
-            updateMusicBtnState(false);
+        // Play if not muted / 如果用户没有手动静音，就开始播放
+        if (!isGlobalMuted) {
+            audio.play().catch(e => console.log("Waiting for interaction to play / 等待交互播放"));
+            updateMusicBtnState(true); // Start rotation / 按钮开始旋转
         } else {
-            audio.play();
-            updateMusicBtnState(true);
+            updateMusicBtnState(false); // Keep muted icon / 保持静音图标
         }
     }
-}
 
-// 3. 更新按钮UI (辅助函数)
-function updateMusicBtnState(isPlaying) {
-    const btn = document.getElementById('music-control');
-    if (isPlaying) {
-        btn.classList.remove('muted');
-    } else {
-        btn.classList.add('muted');
-    }
-}
+    // 2. User Click Toggle / 用户点击右上角按钮
+    function toggleMusic() {
+        const btn = document.getElementById('music-control');
+        isGlobalMuted = !isGlobalMuted; // Toggle State / 切换状态
 
-// --- 修改后：回归本质的按钮监听 ---
-function initHUDListeners() {
-    const hud = document.getElementById('hud-center');
-    
-    // 按下 = 告诉系统“我现在是捏合状态”
-    const onPress = (e) => {
-        if (!isMobile) return; 
-        e.preventDefault(); 
-        e.stopPropagation();
-
-        // 1. 速度检查：太快了不许按
-        if (isInertia && Math.abs(touchVelocity) > GRAB_THRESHOLD) return;
-        
-        // 2. 数量检查：选够了不许按
-        if (selectionCount >= MAX_SELECTION) return;
-
-        // 3. 动作：强制停车，状态设为 PINCH
-        isInertia = false;
-        touchVelocity = 0;
-        isDragging = false;
-        snapToGrid(); 
-        
-        handState = 'PINCH'; // <--- 关键：只改变状态，剩下的交给主循环
-        updateCursorIcon();
-    };
-
-    // 松开 = 告诉系统“我现在松手了”
-    const onRelease = (e) => {
-        if (!isMobile) return;
-        e.preventDefault();
-
-        handState = 'OPEN'; // <--- 关键：状态复位
-        updateCursorIcon();
-
-        // 解开连发锁，准备下一次操作
-        interactionLock = false; 
-    };
-
-    hud.addEventListener('touchstart', onPress, {passive:false});
-    hud.addEventListener('touchend', onRelease, {passive:false});
-    hud.addEventListener('touchcancel', onRelease, {passive:false});
-}
-
-
-function updateCursorIcon() {
-    const icon = handState==='FIST'?'✊':(handState==='PINCH'?'🤏': (isMobile ? '👆' : '🖱️'));
-    document.getElementById('gesture-icon').innerText = icon;
-}
-
-function updateStatusText() {
-    const t = TEXTS[currentLang];
-    const el = document.getElementById('status-text');
-    if (isRitualComplete) {
-        el.innerText = t.statusDone;
-        return;
-    }
-    if (activeCard && activeCard.userData.state === 'SELECTED') {
-        el.innerText = controlMode === 'hand' ? t.statusFist : t.statusSpace;
-    } else if (activeCard && activeCard.userData.state === 'REVEALING') {
-        el.innerText = t.statusReveal;
-    } else {
-        if (controlMode === 'hand') el.innerText = t.statusWave;
-        else el.innerText = isMobile ? t.statusTouch : t.statusMouse; // 区分触摸和鼠标提示
-    }
-}
-
-// --- 定义：核心中轴计算逻辑 ---
-// --- 修改后：带冻结逻辑的中轴判定 ---
-function getAxisCard() {
-    // 🛑 冻结逻辑 (Step 8.1)
-    // 如果当前有“主角卡” (选中、下拉中、或正在归位)
-    // 直接锁定它为中轴卡，不再计算距离
-    // 这样即使卡片被拉到屏幕边缘，系统依然认为它是“中心”
-    if (activeCard) {
-        // 确保它不高亮轮廓（我们用光影材质来做高亮，不用 LineSegments）
-        if (activeCard.userData.outline) activeCard.userData.outline.visible = false;
-        return activeCard;
-    }
-
-    // --- 以下是常规逻辑 (只有没选中卡时才运行) ---
-    
-    let closestCard = null;
-    let minAbsX = Infinity; 
-
-    cardObjects.forEach(card => {
-        // 排除已选中的（虽然上面已经拦截了 activeCard，但为了防止飞走的卡干扰，保留此判断）
-        if (card.userData.isChosen) return;
-
-        // 获取世界坐标 X
-        const worldPos = new THREE.Vector3();
-        card.getWorldPosition(worldPos);
-
-        // 只看相机前方的卡
-        if (worldPos.z < 0) { 
-            const absX = Math.abs(worldPos.x);
-            if (absX < minAbsX) {
-                minAbsX = absX;
-                closestCard = card;
+        if (currentAudioId) {
+            const audio = document.getElementById(currentAudioId);
+            if (isGlobalMuted) {
+                audio.pause();
+                updateMusicBtnState(false);
+            } else {
+                audio.play();
+                updateMusicBtnState(true);
             }
         }
-        
-        // 确保平时没有 outline
-        if (card.userData.outline) card.userData.outline.visible = false;
-    });
-
-    return closestCard;
-}
-
-let isHandRotating = false; // 新增标记
-
-function handleInput() {
-    if (!isStarted) return;
-    if (isRitualComplete) {
-        animateFinalFormation();
-        return;
     }
 
-    // 🛑 冷却期锁死
-    if (isCoolingDown) return;
-
-    // ==========================================
-    // 1. 物理引擎 (仅当没选中牌，且不在下拉抽卡时运行)
-    // ==========================================
-    if (!activeCard) {
-        if (isInertia) {
-            ringRotation += touchVelocity * 15;
-            touchVelocity *= FRICTION;
-            if (Math.abs(touchVelocity) < 0.0005) {
-                isInertia = false;
-                touchVelocity = 0;
-                snapToGrid();
-            }
-        }
-        
-        // 兼容 PC鼠标 / 摄像头手势转动 (只要没在触控拖拽)
-        if (!isDragging && !isInertia && handState === 'OPEN') {
-             const deadZone = 0.15;
-             const speed = isMobile ? 0.015 : 0.02;
-             if (Math.abs(handX) > deadZone) {
-                  ringRotation += (handX - Math.sign(handX)*deadZone) * speed;
-                  isHandRotating = true;
-             } else if (isHandRotating) {
-                  snapToGrid();
-                  isHandRotating = false;
-             }
-        }
-
-        // 应用旋转
-        if (isDragging && dragDirection === 'X') {
-            deckGroup.rotation.y = ringRotation;
+    // 3. Update Button UI (Helper) / 更新按钮UI (辅助函数)
+    function updateMusicBtnState(isPlaying) {
+        const btn = document.getElementById('music-control');
+        if (isPlaying) {
+            btn.classList.remove('muted');
         } else {
-            deckGroup.rotation.y = THREE.MathUtils.lerp(deckGroup.rotation.y, ringRotation, 0.1);
+            btn.classList.add('muted');
         }
     }
 
-    // ==========================================
-    // 2. 中轴计算
-    // ==========================================
-    const newAxisCard = getAxisCard();
-    centerCard = newAxisCard; 
+    // --- Modified: Clean Button Listeners / 修改后：回归本质的按钮监听 ---
+    function initHUDListeners() {
+        const hud = document.getElementById('hud-center');
 
-    // PC 鼠标样式反馈
-    if (!isMobile && !isDragging) {
-        if (Math.abs(handX) < 0.2 && centerCard && !isInertia) document.body.classList.add('can-grab');
-        else document.body.classList.remove('can-grab');
-    }
-    
-    // ==========================================
-    // 3. 抓取逻辑 (Trigger Selection)
-    // ==========================================
-    
-    // 只要 handState 是 PINCH，且有中轴卡，没抓别的，不是在下拉，不是在惯性
-    if (handState === 'PINCH' && centerCard && !activeCard && !isDragging && !isInertia && dragDirection !== 'Y') {
-        selectCard(centerCard);
+        // Press = "I am pinching" / 按下 = 告诉系统“我现在是捏合状态”
+        const onPress = (e) => {
+            if (!isMobile) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            // 1. Speed Check / 速度检查：太快了不许按
+            if (isInertia && Math.abs(touchVelocity) > GRAB_THRESHOLD) return;
+
+            // 2. Count Check / 数量检查：选够了不许按
+            if (selectionCount >= MAX_SELECTION) return;
+
+            // 3. Action: Force Stop / 动作：强制停车，状态设为 PINCH
+            isInertia = false;
+            touchVelocity = 0;
+            isDragging = false;
+            snapToGrid();
+
+            handState = 'PINCH'; // <--- Key: Change state only / 关键：只改变状态，剩下的交给主循环
+            updateCursorIcon();
+        };
+
+        // Release = "I let go" / 松开 = 告诉系统“我现在松手了”
+        const onRelease = (e) => {
+            if (!isMobile) return;
+            e.preventDefault();
+
+            handState = 'OPEN'; // <--- Key: Reset state / 关键：状态复位
+            updateCursorIcon();
+
+            // Unlock rapid fire / 解开连发锁，准备下一次操作
+            interactionLock = false;
+        };
+
+        hud.addEventListener('touchstart', onPress, { passive: false });
+        hud.addEventListener('touchend', onRelease, { passive: false });
+        hud.addEventListener('touchcancel', onRelease, { passive: false });
     }
 
-    // ==========================================
-    // 4. 选中后的交互 (核心修改区域)
-    // ==========================================
-    
-    if (activeCard) {
-        // --- A. 触控下拉模式 (Touch Pull) ---
-        // 全权交给 touchmove 控制，这里不干涉位置
-        if (dragDirection === 'Y') {
+
+    function updateCursorIcon() {
+        const icon = handState === 'FIST' ? '✊' : (handState === 'PINCH' ? '🤏' : (isMobile ? '👆' : '🖱️'));
+        document.getElementById('gesture-icon').innerText = icon;
+    }
+
+    function updateStatusText() {
+        const t = TEXTS[currentLang];
+        const el = document.getElementById('status-text');
+        if (isRitualComplete) {
+            el.innerText = t.statusDone;
+            return;
+        }
+        if (activeCard && activeCard.userData.state === 'SELECTED') {
+            el.innerText = controlMode === 'hand' ? t.statusFist : t.statusSpace;
+        } else if (activeCard && activeCard.userData.state === 'REVEALING') {
+            el.innerText = t.statusReveal;
+        } else {
+            if (controlMode === 'hand') el.innerText = t.statusWave;
+            else el.innerText = isMobile ? t.statusTouch : t.statusMouse; // Different hints / 区分触摸和鼠标提示
+        }
+    }
+
+    // --- Define: Core Axis Calculation / 定义：核心中轴计算逻辑 ---
+    // --- Modified: With Freeze Logic / 修改后：带冻结逻辑的中轴判定 ---
+    function getAxisCard() {
+        // 🛑 Freeze Logic (Step 8.1) / 冻结逻辑
+        // If there is currently a "Hero Card" (Selected, Pulling, or Returning)
+        // Lock it as axis card, ignore distance calculation
+        // 如果当前有“主角卡” (选中、下拉中、或正在归位)，直接锁定它为中轴卡
+        if (activeCard) {
+            // Ensure no outline (we use lighting) / 确保它不高亮轮廓（我们用光影材质来做高亮）
             if (activeCard.userData.outline) activeCard.userData.outline.visible = false;
-        } 
-        
-        // --- B. 自动模式 (Mouse / Camera) ---
-        else {
-            // 1. 基础动画：飞到眼前
-            const targetZ = isMobile ? -3.5 : -2.2;
-            // 🔴 [修改这里] 移动端高度修正
-            // 0 = 世界中心 (移动端看起来偏下)
-            // 0.8 = 稍微抬高 (移动端看起来居中)
-            // 你可以根据感觉调整这个数字 (0.5 ~ 1.2)
-            const targetY = isMobile ? 0.8 : 0; 
+            return activeCard;
+        }
 
-            // 使用新的 targetY 进行插值移动
-            activeCard.position.lerp(new THREE.Vector3(0, targetY, targetZ), 0.1);
-            //activeCard.position.lerp(new THREE.Vector3(0, 0, targetZ), 0.1);
-            //activeCard.position.y = THREE.MathUtils.lerp(activeCard.position.y, 0, 0.1);
-            
-            if (activeCard.userData.state === 'SELECTED') {
-                const idleQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
-                activeCard.quaternion.slerp(idleQ, 0.1);
+        // --- Standard Logic (Run only when no card selected) / 以下是常规逻辑 ---
 
-                // 2. 🚨 判定逻辑分流 🚨
-                
-                // === ✋ 分支 1：手势模式 (Hand Mode) ===
-                if (controlMode === 'hand') {
-                    // 规则：不握拳不翻转
-                    
-                    if (handState === 'FIST') {
-                        // 握拳 -> 立即翻转
-                        revealCard(activeCard);
-                    } 
-                    else if (handState === 'OPEN') {
-                        // 松手 -> 弹回
-                        returnCard(activeCard);
-                    }
-                    // 注意：如果是 PINCH，这里什么都不做。
-                    // 既不翻转，也不弹回，就悬停在空中让用户看。
+        let closestCard = null;
+        let minAbsX = Infinity;
+
+        cardObjects.forEach(card => {
+            // Exclude chosen cards / 排除已选中的
+            if (card.userData.isChosen) return;
+
+            // Get World X / 获取世界坐标 X
+            const worldPos = new THREE.Vector3();
+            card.getWorldPosition(worldPos);
+
+            // Only consider cards in front / 只看相机前方的卡
+            if (worldPos.z < 0) {
+                const absX = Math.abs(worldPos.x);
+                if (absX < minAbsX) {
+                    minAbsX = absX;
+                    closestCard = card;
                 }
-                
-                // === 🖱️ 分支 2：鼠标模式 (Mouse Mode) ===
-                else {
-                    // 规则：长按翻转
-                    
-                    if (handState === 'PINCH') {
-                        // 按住鼠标 -> 计时
-                        if(!activeCard.userData.revealTimer) activeCard.userData.revealTimer = Date.now();
-                        
-                        // 超过 500ms -> 翻转
-                        if(Date.now() - activeCard.userData.revealTimer > 500) {
+            }
+
+            // Ensure no outline / 确保平时没有 outline
+            if (card.userData.outline) card.userData.outline.visible = false;
+        });
+
+        return closestCard;
+    }
+
+    let isHandRotating = false; // New Flag / 新增标记
+
+    function handleInput() {
+        if (!isStarted) return;
+        if (isRitualComplete) {
+            animateFinalFormation();
+            return;
+        }
+
+        // 🛑 Cooldown Lock / 冷却期锁死
+        if (isCoolingDown) return;
+
+        // ==========================================
+        // 1. Physics Engine (Run only when no card selected)
+        // 1. 物理引擎 (仅当没选中牌，且不在下拉抽卡时运行)
+        // ==========================================
+        if (!activeCard) {
+            if (isInertia) {
+                ringRotation += touchVelocity * 15;
+                touchVelocity *= FRICTION;
+                if (Math.abs(touchVelocity) < 0.0005) {
+                    isInertia = false;
+                    touchVelocity = 0;
+                    snapToGrid();
+                }
+            }
+
+            // Compatible with PC Mouse / Camera Gesture Rotation / 兼容 PC鼠标 / 摄像头手势转动
+            if (!isDragging && !isInertia && handState === 'OPEN') {
+                const deadZone = 0.15;
+                const speed = isMobile ? 0.015 : 0.02;
+                if (Math.abs(handX) > deadZone) {
+                    ringRotation += (handX - Math.sign(handX) * deadZone) * speed;
+                    isHandRotating = true;
+                } else if (isHandRotating) {
+                    snapToGrid();
+                    isHandRotating = false;
+                }
+            }
+
+            // Apply Rotation / 应用旋转
+            if (isDragging && dragDirection === 'X') {
+                deckGroup.rotation.y = ringRotation;
+            } else {
+                deckGroup.rotation.y = THREE.MathUtils.lerp(deckGroup.rotation.y, ringRotation, 0.1);
+            }
+        }
+
+        // ==========================================
+        // 2. Axis Calculation / 中轴计算
+        // ==========================================
+        const newAxisCard = getAxisCard();
+        centerCard = newAxisCard;
+
+        // PC Mouse Feedback / PC 鼠标样式反馈
+        if (!isMobile && !isDragging) {
+            if (Math.abs(handX) < 0.2 && centerCard && !isInertia) document.body.classList.add('can-grab');
+            else document.body.classList.remove('can-grab');
+        }
+
+        // ==========================================
+        // 3. Grab Logic (Trigger Selection) / 抓取逻辑
+        // ==========================================
+
+        // If PINCH, Axis Card exists, No Active Card, Not Dragging, Not Inertia, Not Pulling
+        // 只要 handState 是 PINCH，且有中轴卡，没抓别的，不是在下拉，不是在惯性
+        if (handState === 'PINCH' && centerCard && !activeCard && !isDragging && !isInertia && dragDirection !== 'Y') {
+            selectCard(centerCard);
+        }
+
+        // ==========================================
+        // 4. Interaction after Selection / 选中后的交互
+        // ==========================================
+
+        if (activeCard) {
+            // --- A. Touch Pull Mode / 触控下拉模式 ---
+            // Controlled by touchmove, no position interference here
+            // 全权交给 touchmove 控制，这里不干涉位置
+            if (dragDirection === 'Y') {
+                if (activeCard.userData.outline) activeCard.userData.outline.visible = false;
+            }
+
+            // --- B. Auto Mode (Mouse / Camera) / 自动模式 ---
+            else {
+                // 1. Basic Animation: Fly to Eye / 基础动画：飞到眼前
+                const targetZ = isMobile ? -3.5 : -2.2;
+                // 🔴 [Mod] Mobile Height Correction / [修改这里] 移动端高度修正
+                // 0 = World Center (Looks low on mobile) / 世界中心 (移动端看起来偏下)
+                // 0.8 = Slightly raised / 稍微抬高 (移动端看起来居中)
+                const targetY = isMobile ? 0.8 : 0;
+
+                // Move with interpolation / 使用新的 targetY 进行插值移动
+                activeCard.position.lerp(new THREE.Vector3(0, targetY, targetZ), 0.1);
+
+                if (activeCard.userData.state === 'SELECTED') {
+                    const idleQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0));
+                    activeCard.quaternion.slerp(idleQ, 0.1);
+
+                    // 2. 🚨 Logic Branching / 判定逻辑分流 🚨
+
+                    // === ✋ Branch 1: Hand Mode / 手势模式 ===
+                    if (controlMode === 'hand') {
+                        // Rule: Fist to Flip / 规则：不握拳不翻转
+
+                        if (handState === 'FIST') {
+                            // Fist -> Reveal Immediately / 握拳 -> 立即翻转
                             revealCard(activeCard);
+                        } else if (handState === 'OPEN') {
+                            // Release -> Return / 松手 -> 弹回
+                            returnCard(activeCard);
                         }
-                    } 
-                    else if (handState === 'OPEN') {
-                        // 松开鼠标 -> 弹回
-                        activeCard.userData.revealTimer = null;
-                        returnCard(activeCard);
+                        // Note: If PINCH, do nothing (Hover)
+                        // 注意：如果是 PINCH，这里什么都不做，悬停。
+                    }
+
+                    // === 🖱️ Branch 2: Mouse Mode / 鼠标模式 ===
+                    else {
+                        // Rule: Long Press to Flip / 规则：长按翻转
+
+                        if (handState === 'PINCH') {
+                            // Holding -> Timer / 按住鼠标 -> 计时
+                            if (!activeCard.userData.revealTimer) activeCard.userData.revealTimer = Date.now();
+
+                            // > 500ms -> Flip / 超过 500ms -> 翻转
+                            if (Date.now() - activeCard.userData.revealTimer > 500) {
+                                revealCard(activeCard);
+                            }
+                        } else if (handState === 'OPEN') {
+                            // Release -> Return / 松开鼠标 -> 弹回
+                            activeCard.userData.revealTimer = null;
+                            returnCard(activeCard);
+                        }
                     }
                 }
             }
+        } else {
+            updateStatusText();
         }
-    } else {
-        updateStatusText();
     }
-}
 
-// --- 新增：强制归位逻辑 ---
-function snapToGrid() {
-    if (deckList.length === 0) return;
-    // 1. 算出每张牌的间隔角度 (弧度)
-    // 22张牌，一圈是 2PI
-    const step = (Math.PI * 2) / deckList.length;
+    // --- New: Force Snap to Grid / 新增：强制归位逻辑 ---
+    function snapToGrid() {
+        if (deckList.length === 0) return;
+        // 1. Calculate angle step / 算出每张牌的间隔角度 (弧度)
+        const step = (Math.PI * 2) / deckList.length;
 
-    // 2. 算出当前旋转角度对应的是“第几个卡位”
-    // 使用 Math.round 进行四舍五入，这就是“找最近”的核心
-    const closestIndex = Math.round(ringRotation / step);
+        // 2. Find closest slot index / 算出当前旋转角度对应的是“第几个卡位”
+        // Math.round creates the "Snap" effect / 使用 Math.round 进行四舍五入
+        const closestIndex = Math.round(ringRotation / step);
 
-    // 3. 算出那个卡位的标准角度
-    const targetRotation = closestIndex * step;
+        // 3. Calculate target angle / 算出那个卡位的标准角度
+        const targetRotation = closestIndex * step;
 
-    // 4.系统会认为“原本就应该转到这里”，然后通过 lerp 慢慢滑过去
-    ringRotation = targetRotation;
-    
-    // 5. 再次强制更新一下中轴卡，确保数据同步
-    centerCard = getAxisCard();
-    // 调试日志（可选）
-    // console.log("Snap triggered! Target:", targetRotation);
-}
+        // 4. Set rotation target (lerp handles movement) / 系统认为“应转到这里”，lerp 会平滑处理
+        ringRotation = targetRotation;
+
+        // 5. Update axis card / 再次强制更新一下中轴卡
+        centerCard = getAxisCard();
+    }
 
 
-function selectCard(card) {
-    if (selectionCount >= MAX_SELECTION) return;
-    // [新增] 一旦选中，立即隐藏指引层
-    toggleGuides(false);
-    activeCard = card;
-    card.userData.state = 'SELECTED';
-    card.userData.revealTimer = Date.now(); // 初始化计时器
-    if(card.userData.outline) card.userData.outline.visible = false;
-    scene.attach(card); 
-}
+    function selectCard(card) {
+        if (selectionCount >= MAX_SELECTION) return;
+        // [New] Hide guides on selection / [新增] 一旦选中，立即隐藏指引层
+        toggleGuides(false);
+        activeCard = card;
+        card.userData.state = 'SELECTED';
+        card.userData.revealTimer = Date.now(); // Init Timer / 初始化计时器
+        if (card.userData.outline) card.userData.outline.visible = false;
+        scene.attach(card);
+    }
 
-function returnCard(card) {
-    deckGroup.attach(card);
-    card.userData.state = 'RETURNING';
-    activeCard = null;
-}
+    function returnCard(card) {
+        deckGroup.attach(card);
+        card.userData.state = 'RETURNING';
+        activeCard = null;
+    }
 
-// --- 修改后：归位后带有冷却期 ---
-function updateReturningCards() {
-    cardObjects.forEach(card => {
-        if (card.userData.state === 'RETURNING') {
-            // ... (原本的位移/旋转代码保持不变) ...
-            const targetPos = new THREE.Vector3(
-                RADIUS * Math.sin(card.userData.theta), 
-                0, 
-                -RADIUS * Math.cos(card.userData.theta)
-            );
-            card.position.lerp(targetPos, 0.08); // 用你之前的参数
-            
-            // 简单的旋转插值，确保归位时是正的
-            const dummy = new THREE.Object3D();
-            dummy.position.copy(card.position);
-            dummy.lookAt(0,0,0);
-            card.quaternion.slerp(dummy.quaternion, 0.08);
-
-            // 🛑 到达判断
-            if (card.position.distanceTo(targetPos) < 0.05) {
-                // 1. 物理归位
-                deckGroup.attach(card);
-                card.position.set(
+    // --- Modified: Return with Cooldown / 修改后：归位后带有冷却期 ---
+    function updateReturningCards() {
+        cardObjects.forEach(card => {
+            if (card.userData.state === 'RETURNING') {
+                // ... (Logic same as before) ...
+                const targetPos = new THREE.Vector3(
                     RADIUS * Math.sin(card.userData.theta),
                     0,
                     -RADIUS * Math.cos(card.userData.theta)
                 );
-                card.lookAt(0, 0, 0); // 确保朝向正确
-                
-                // 2. 标记状态已完成
-                card.userData.state = 'IDLE';
+                card.position.lerp(targetPos, 0.08);
 
-                // 3. 🛑 核心修改：进入冷却期
-                isCoolingDown = true;
-                
-                // 4. 延迟解锁
-                setTimeout(() => {
-                    // 冷却结束，才允许系统去选别的卡，或者允许用户转动
-                    activeCard = null;
-                    isCoolingDown = false;
-                    // [新增] 只有当仪式还没彻底结束时，才恢复指引显示
-                    if (!isRitualComplete && selectionCount < MAX_SELECTION) {
-                    // 必须检查 toggleGuides 是否存在，防止报错
-            if (typeof toggleGuides === 'function') {
-                toggleGuides(true);
-            }}
-                }, COOLDOWN_TIME);
-            }
-        }
-    });
-}
+                // Simple rotation interpolation / 简单的旋转插值
+                const dummy = new THREE.Object3D();
+                dummy.position.copy(card.position);
+                dummy.lookAt(0, 0, 0);
+                card.quaternion.slerp(dummy.quaternion, 0.08);
 
+                // 🛑 Arrival Check / 到达判断
+                if (card.position.distanceTo(targetPos) < 0.05) {
+                    // 1. Physical Return / 物理归位
+                    deckGroup.attach(card);
+                    card.position.set(
+                        RADIUS * Math.sin(card.userData.theta),
+                        0,
+                        -RADIUS * Math.cos(card.userData.theta)
+                    );
+                    card.lookAt(0, 0, 0); // Correct Facing / 确保朝向正确
 
+                    // 2. Mark State Idle / 标记状态已完成
+                    card.userData.state = 'IDLE';
 
-// --- 修改后：配合冻结和冷却的翻牌逻辑 ---
-function revealCard(card) {
-    // 1. 防重复触发
-    if (card.userData.state === 'REVEALING') return;
-    
-    // 2. 🚨 关键修改：改变状态
-    // 只要设为 REVEALING，handleInput 里的自动扶正逻辑就会停止工作
-    // 这样 animateFlip 才能独占控制权，平滑地翻转卡片
-    card.userData.state = 'REVEALING';
-    
-    updateStatusText(); // 更新底部文字为 "OBSERVING..."
-    
-    // 3. 决定正逆位 (随机)
-    const isReversed = Math.random() < 0.5;
-    card.userData.isReversed = isReversed;
+                    // 3. 🛑 Core Mod: Enter Cooldown / 核心修改：进入冷却期
+                    isCoolingDown = true;
 
-    // 4. 计算翻转的目标角度
-    const startQ = card.quaternion.clone();
-    const targetEuler = new THREE.Euler(0, Math.PI, isReversed ? Math.PI : 0);
-    const targetQ = new THREE.Quaternion().setFromEuler(targetEuler);
-
-    // 5. 获取卡名 (用于显示)
-    const data = card.userData.rawData;
-    const name = data[currentLang].name;
-
-    // 6. 执行翻转动画
-    let p = 0;
-    function animateFlip() {
-        p += 0.03; // 翻转速度
-        
-        // 插值旋转
-        card.quaternion.slerpQuaternions(startQ, targetQ, p);
-        
-        if (p < 1) {
-            requestAnimationFrame(animateFlip);
-        } else {
-            // 动画结束，强制修正角度
-            card.rotation.set(0, Math.PI, isReversed ? Math.PI : 0);
-            
-            // 显示卡牌名字
-            document.getElementById('status-text').innerText = name.toUpperCase();
-            
-            // 7. ⏳ 停留 2秒 让用户看清牌面，然后执行溶解
-            // 注意：这里调用的是 Step 9 修改过的 dissolve
-            // dissolve 内部会处理 isCoolingDown 和 activeCard = null
-            setTimeout(() => { 
-                dissolve(card, isReversed); 
-            }, 2000);
-        }
-    }
-    animateFlip();
-}
-
-// --- 修改后：翻牌后带有冷却期 ---
-function dissolve(card, isReversed) {
-    spawnParticles(card.position);
-    selectionCount++;
-    addToHistory(card.userData.rawData, isReversed);
-    
-    // 隐藏卡片
-    card.visible = false;
-    card.userData.isChosen = true;
-    chosen3DMeshes.push(card); 
-
-    // 🛑 核心修改：进入冷却期
-    isCoolingDown = true;
-
-    // 延迟解锁
-    setTimeout(() => {
-        // 只有冷却结束后，才释放 activeCard
-        // 这期间 getAxisCard 依然会认为 activeCard 是主角，从而锁定中轴
-        activeCard = null;
-        isCoolingDown = false;
-        
-// 检查是否结束
-        if (selectionCount >= MAX_SELECTION) {
-            startEndRitual();
-        } else {
-            // 🟢 [新增] 如果还没选完 3 张，必须恢复显示指引，让用户选下一张
-            if (typeof toggleGuides === 'function') {
-                toggleGuides(true);
-            }
-        }
-    }, COOLDOWN_TIME);
-}
-function startEndRitual() {
-    isRitualComplete = true;
-    updateStatusText();
-    
-    document.getElementById('history-container').style.opacity = 0;
-    document.getElementById('hud-center').style.opacity = 0;
-    
-    setTimeout(() => {
-        // 显示底部UI
-        document.getElementById('end-ui').style.opacity = 1;
-        document.getElementById('end-ui').style.pointerEvents = 'auto';
-        document.getElementById('credits').style.opacity = 1;
-
-        // --- 逻辑变更：先显示查看指引按钮，隐藏重启按钮 ---
-        document.getElementById('view-reading-btn').style.display = 'block';
-        document.getElementById('restart-btn').style.display = 'none';
-
-        // 设置按钮语言
-        const btnText = currentLang === 'zh' ? "揭示指引" : "REVEAL FATE";
-        document.getElementById('view-reading-btn').innerText = btnText;
-
-    }, 3500);
-
-    cardObjects.forEach(c => {
-        if (!c.userData.isChosen) {
-            c.userData.dropSpeed = 0.05 + Math.random() * 0.1;
-        }
-    });
-
-    chosen3DMeshes.forEach((card, index) => {
-        card.visible = true;
-        scene.attach(card); 
-        // 结束动画起始位置
-        card.position.set(4 + index*0.5, 3, -4); 
-        card.scale.set(0.2, 0.2, 0.2);
-
-        // 响应式最终位置计算
-        const isPortrait = window.innerHeight > window.innerWidth;
-        const gap = isPortrait ? 1.8 : 3.0;      
-        const depth = isPortrait ? -7.0 : -6.0; 
-        const targetY = isPortrait ? 3.0 : 0;
-        
-        card.userData.finalTargetPos = new THREE.Vector3((index - 1) * gap, targetY, depth);
-        card.userData.finalTargetScale = 0.8;
-        card.userData.animProgress = 0;
-        card.userData.animDelay = index * 30; 
-    });
-
-    const textContainer = document.getElementById('final-text-container');
-    const t = TEXTS[currentLang];
-    
-    chosen3DMeshes.forEach(card => {
-        const div = document.createElement('div');
-        div.className = 'final-card-label';
-        const data = card.userData.rawData[currentLang];
-        const revText = card.userData.isReversed ? ` (${t.rev})` : "";
-        div.innerHTML = `<div class="final-name">${data.name}${revText}</div><div class="final-meaning">${data.meaning}</div>`;
-        textContainer.appendChild(div);
-    });
-    setTimeout(() => { textContainer.style.opacity = 1; }, 2000);
-}
-
-// --- 修改：进入星空解说模式 (支持异步 API) ---
-async function enterStarryVoid() {
-    // 🟢 [新增] 隐藏摄像头窗口，防止遮挡文字
-    const videoEl = document.getElementById('video-feed');
-    videoEl.style.opacity = 0;
-    setTimeout(() => { videoEl.style.display = 'none'; }, 1000);
-    // 🔴 [修改] 播放第二首 (bgm2.mp3)
-    switchMusic('bgm-final');
-    // 隐藏按钮和标签
-    document.getElementById('view-reading-btn').style.display = 'none';
-    document.getElementById('final-text-container').style.opacity = 0;
-    
-    // 隐藏所有3D卡牌
-    chosen3DMeshes.forEach(mesh => { mesh.visible = false; });
-    cardObjects.forEach(mesh => { mesh.visible = false; });
-
-    const overlay = document.getElementById('oracle-overlay');
-    
-    // 显示 Loading 动画
-    const loadingText = currentLang === 'zh' ? "正在与星辰连接..." : "Connecting with the stars...";
-    overlay.innerHTML = `<div style="opacity:0.7; animation: pulse 1.5s infinite;">${loadingText}</div>`;
-
-    // 定义打字结束后的回调函数
-    const onTypingComplete = () => {
-        const restartBtn = document.getElementById('restart-btn');
-        restartBtn.style.display = 'block';
-        restartBtn.style.opacity = 0;
-        let op = 0;
-        const fadeTimer = setInterval(() => {
-            if(op >= 1) clearInterval(fadeTimer);
-            restartBtn.style.opacity = op;
-            op += 0.05;
-        }, 30);
-    };
-
-    // 尝试调用 API
-    if (API_KEY && API_KEY.length > 5) {
-        try {
-            const apiText = await callTarotAPI(chosen3DMeshes);
-            typeWriter(apiText, overlay, onTypingComplete);
-        } catch (e) {
-            console.error("API Error:", e);
-            
-            // 🔴 调试模式：弹出错误警告
-            if (DEBUG_MODE) {
-                // 提示用户安装插件
-                alert(`API 调用失败: ${e.message}\n\n【解决方案】\nAPI 在浏览器直接调用时会被拦截 (CORS Error)。\n请确保代理 URL 有效。`);
-            }
-            
-            // 失败则降级到本地文案
-            const fallbackText = generateReadingText(); 
-            typeWriter(fallbackText, overlay, onTypingComplete);
-        }
-    } else {
-        // 没有 Key，直接使用本地逻辑
-        setTimeout(() => {
-            const text = generateReadingText();
-            typeWriter(text, overlay, onTypingComplete);
-        }, 1500);
-    }
-}
-
-// --- 新增：调用 LLM API 获取解读 (包含 Proxy 逻辑) ---
-async function callTarotAPI(cards) {
-    const cardDescriptions = cards.map((c, i) => {
-        const name = c.userData.rawData[currentLang].name;
-        const posName = currentLang === 'zh' ? ["过去", "现在", "未来"][i] : ["Past", "Present", "Future"][i];
-        const status = c.userData.isReversed 
-            ? (currentLang === 'zh' ? "逆位 (Reversed)" : "Reversed") 
-            : (currentLang === 'zh' ? "正位 (Upright)" : "Upright");
-        return `${posName}: ${name} [${status}]`;
-    }).join("\n");
-
-    const prompt = currentLang === 'zh' 
-        ? `你是一位神秘的塔罗牌占卜师。求问者的问题是：“${userQuestionText}”。\n请根据以下牌阵为求问者解读：\n${cardDescriptions}\n\n要求：\n1. 用中文回答。\n2. 必须结合求问者的问题进行解答。\n3. 风格神秘、诗意。\n4. 将三张牌串联成一个完整的故事。\n5. 字数控制在150字以内。`
-        : `You are a mystical Tarot reader. The seeker asks: "${userQuestionText}".\nInterpret the following spread:\n${cardDescriptions}\n\nRequirements:\n1. Answer in English.\n2. Directly address the seeker's question.\n3. Tone: Mystical, poetic.\n4. Weave the cards into a coherent narrative.\n5. Keep it under 150 words.`;
-    // 增加 AbortController 用于超时控制
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20秒超时
-
-    // --- ⚠️ 关键修正：只有这里使用代理 ---
-    let url = API_ENDPOINT;
-    if (USE_PROXY_FOR_API) {
-        console.log("正在应用代理以解决跨域问题...");
-        // 将目标 API 地址编码后拼接到代理地址后面
-        url = PROXY_BASE_URL + encodeURIComponent(API_ENDPOINT);
-    }
-    // -------------------------------------
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: API_MODEL,
-                messages: [{ role: "user", content: prompt }],
-                temperature: 0.7,
-                max_tokens: 300
-            }),
-            signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errText}`);
-        }
-
-        const data = await response.json();
-        return data.choices[0].message.content;
-    } catch (err) {
-        clearTimeout(timeoutId);
-        throw err;
-    }
-}
-
-// --- 备选：生成本地解说文案 ---
-function generateReadingText() {
-    const m1 = chosen3DMeshes[0].userData.rawData[currentLang].meaning;
-    const m2 = chosen3DMeshes[1].userData.rawData[currentLang].meaning;
-    const m3 = chosen3DMeshes[2].userData.rawData[currentLang].meaning;
-    
-    if (currentLang === 'zh') {
-        return `命运的轨迹已在星辰中显现...<br><br>` +
-               `过去，你经历了 ${m1}。<br>` +
-               `此刻，正如 ${m2} 所昭示的，你需要专注于当下的力量。<br>` +
-               `而未来，${m3} 将会是你的指引。<br><br>` +
-               `相信直觉，拥抱变化。`;
-    } else {
-        return `The stars have aligned to reveal your path...<br><br>` +
-               `In the past, you walked through ${m1}.<br>` +
-               `Presently, as shown by ${m2}, focus on your inner power.<br>` +
-               `For the future, let ${m3} be your guiding light.<br><br>` +
-               `Trust your intuition. Embrace the change.`;
-    }
-}
-
-// --- 打字机特效 ---
-function typeWriter(htmlText, element, callback) {
-    element.innerHTML = "";
-    const plainText = htmlText.replace(/<br>/g, '\n'); 
-    let i = 0;
-    const speed = 50; 
-    
-    function type() {
-        if (i < plainText.length) {
-            const char = plainText.charAt(i);
-            element.innerHTML += (char === '\n') ? '<br>' : char;
-            i++;
-            setTimeout(type, speed);
-        } else {
-            if (callback) callback();
-        }
-    }
-    type();
-}
-
-function animateFinalFormation() {
-    cardObjects.forEach(c => {
-        if (!c.userData.isChosen && c.position.y > -10) {
-            c.position.y -= c.userData.dropSpeed;
-            c.rotation.x += 0.05;
-        }
-    });
-
-    chosen3DMeshes.forEach(card => {
-        if (card.userData.animDelay > 0) {
-            card.userData.animDelay--;
-            return;
-        }
-        if (card.userData.animProgress < 1) {
-            card.userData.animProgress += 0.015; 
-            const t = card.userData.animProgress;
-            const easeT = t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t; 
-            card.position.lerp(card.userData.finalTargetPos, 0.05);
-            const s = THREE.MathUtils.lerp(0.2, card.userData.finalTargetScale, easeT);
-            card.scale.set(s, s, s);
-            const isRev = card.userData.isReversed;
-            card.rotation.set(0, Math.PI, isRev ? Math.PI : 0);
-        }
-    });
-}
-
-function addToHistory(rawData, isRev) {
-    const con = document.getElementById('history-container'); 
-    const slot = document.createElement('div'); 
-    slot.className = `history-slot ${isRev?'is-reversed':''}`;
-    const t = TEXTS[currentLang];
-    const data = rawData[currentLang];
-    slot.innerHTML = `<img src="${rawData.url}"><div class="history-info"><div class="history-name">${data.name}</div><div class="history-rev">${t.rev}</div></div>`;
-    con.appendChild(slot); 
-}
-
-const particles = [];
-function spawnParticles(pos) {
-    const count = 500; const geo = new THREE.BufferGeometry(); const pArr = new Float32Array(count*3); const vArr = new Float32Array(count*3);
-    for(let i=0;i<count;i++) {
-        pArr[i*3]=pos.x+(Math.random()-0.5)*CARD_W; pArr[i*3+1]=pos.y+(Math.random()-0.5)*CARD_H; pArr[i*3+2]=pos.z;
-        vArr[i*3]=(Math.random()-0.5)*0.02; vArr[i*3+1]=Math.random()*0.03; vArr[i*3+2]=(Math.random()-0.5)*0.02;
-    }
-    geo.setAttribute('position', new THREE.BufferAttribute(pArr,3));
-    const mat = new THREE.PointsMaterial({color: GOLD_COLOR, size:0.04, transparent:true});
-    const sys = new THREE.Points(geo,mat); sys.userData={life:1.0, vels:vArr}; scene.add(sys); particles.push(sys);
-}
-function updateParticles() {
-    for(let i=particles.length-1;i>=0;i--) {
-        const sys=particles[i], p=sys.geometry.attributes.position.array, v=sys.userData.vels; sys.userData.life-=0.02;
-        for(let j=0;j<p.length/3;j++){ p[j*3]+=v[j*3]; p[j*3+1]+=v[j*3+1]; p[j*3+2]+=v[j*3+2]; }
-        sys.geometry.attributes.position.needsUpdate=true; sys.material.opacity=sys.userData.life;
-        if(sys.userData.life<=0){scene.remove(sys); particles.splice(i,1);}
-    }
-}
-
-function initCamera() {
-    const videoElem = document.getElementById('video-feed');
-    // ⚠️ Mediapipe 模型：直接使用 CDN，不走代理
-    const hands = new Hands({locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-    hands.setOptions({maxNumHands:1, modelComplexity:0, minDetectionConfidence:0.5});
-    hands.onResults(res => {
-        if(res.multiHandLandmarks && res.multiHandLandmarks.length>0) {
-            const lm = res.multiHandLandmarks[0];
-            handX += ((1-lm[8].x)*2-1 - handX)*0.2;
-            const pinch = Math.hypot(lm[8].x-lm[4].x, lm[8].y-lm[4].y);
-            const fist = lm[12].y>lm[9].y && lm[16].y>lm[13].y;
-            handState = fist ? 'FIST' : (pinch<0.05 ? 'PINCH' : 'OPEN');
-            if (!isRitualComplete) {
-                document.getElementById('gesture-icon').innerText = handState==='FIST'?'✊':(handState==='PINCH'?'👌':'✋');
-            }
-        }
-    });
-    const cam = new Camera(videoElem, {onFrame: async()=>{await hands.send({image:videoElem})}, width:320, height:240});
-    cam.start();
-}
-
-// 响应式相机位置更新
-function updateCameraPos() {
-    const aspect = window.innerWidth / window.innerHeight;
-    camera.aspect = aspect;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    
-    // 关键：竖屏模式下相机后退，以便看到完整的牌阵环
-    if (aspect < 1) { // 竖屏
-        camera.position.z = 1; // 距离更远
-        camera.position.y = 1;
-    } else { // 横屏
-        camera.position.z = 0;
-        camera.position.y = 0;
-    }
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-    starSystem.rotation.y += 0.0002;
-    if (isStarted) {
-        handleInput(); 
-        updateReturningCards(); 
-        updateParticles();
-        // 👉 新增：在这里调用视觉刷新
-        updateCardVisuals();
-    }
-    renderer.render(scene, camera);
-}
-animate();
-
-
-// --- 修改后：视觉聚光灯逻辑 (霸道模式) ---
-function updateCardVisuals() {
-    // 定义颜色
-    const colorActive = new THREE.Color(0xffffff); // 亮 (聚光)
-    const colorDimmed = new THREE.Color(0x333333); // 暗 (背景压暗，比之前更暗一点以突出主角)
-    
-    // 发光强度
-    const emissiveActive = new THREE.Color(0x222222);
-    const emissiveDimmed = new THREE.Color(0x000000);
-
-    cardObjects.forEach(card => {
-        // 1. 已经飞走/消失的卡，直接跳过，不处理
-        if (card.userData.isChosen) return;
-
-        let isTarget = false;
-
-        // --- 核心判断逻辑 ---
-        if (activeCard) {
-            // 场景 A：玩家手里拿着卡 (Active 存在)
-            // 只有手里这张是亮的目标，其他全暗
-            if (card === activeCard) {
-                isTarget = true;
-            }
-        } else {
-            // 场景 B：玩家没拿卡 (浏览模式)
-            // 只有正对中轴的那张是亮的目标
-            if (card === centerCard) {
-                isTarget = true;
-            }
-        }
-        // --------------------
-
-        const targetColor = isTarget ? colorActive : colorDimmed;
-        const targetEmissive = isTarget ? emissiveActive : emissiveDimmed;
-
-        // 执行颜色渐变
-        card.children.forEach(mesh => {
-            if (mesh.isMesh && mesh.material) {
-                // 颜色过渡
-                mesh.material.color.lerp(targetColor, 0.1);
-                
-                // 自发光过渡 (增加神圣感)
-                if (mesh.material.emissive) {
-                    mesh.material.emissive.lerp(targetEmissive, 0.1);
+                    // 4. Delayed Unlock / 延迟解锁
+                    setTimeout(() => {
+                        // Cooldown over / 冷却结束
+                        activeCard = null;
+                        isCoolingDown = false;
+                        // [New] Show guides if ritual not complete / [新增] 只有当仪式还没彻底结束时，才恢复指引显示
+                        if (!isRitualComplete && selectionCount < MAX_SELECTION) {
+                            if (typeof toggleGuides === 'function') {
+                                toggleGuides(true);
+                            }
+                        }
+                    }, COOLDOWN_TIME);
                 }
             }
         });
-    });
-}
+    }
 
-window.onresize = updateCameraPos;
+
+
+    // --- Modified: Reveal with Freeze/Cooldown / 修改后：配合冻结和冷却的翻牌逻辑 ---
+    function revealCard(card) {
+        // 1. Prevent Double Trigger / 防重复触发
+        if (card.userData.state === 'REVEALING') return;
+
+        // 2. 🚨 Key Mod: Change State / 关键修改：改变状态
+        // Stops handleInput logic, allowing animateFlip to control / 停止自动扶正逻辑
+        card.userData.state = 'REVEALING';
+
+        updateStatusText(); // Update Text / 更新底部文字
+
+        // 3. Determine Upright/Reversed / 决定正逆位 (随机)
+        const isReversed = Math.random() < 0.5;
+        card.userData.isReversed = isReversed;
+
+        // 4. Calculate Target Rotation / 计算翻转的目标角度
+        const startQ = card.quaternion.clone();
+        const targetEuler = new THREE.Euler(0, Math.PI, isReversed ? Math.PI : 0);
+        const targetQ = new THREE.Quaternion().setFromEuler(targetEuler);
+
+        // 5. Get Name / 获取卡名
+        const data = card.userData.rawData;
+        const name = data[currentLang].name;
+
+        // 6. Execute Animation / 执行翻转动画
+        let p = 0;
+
+        function animateFlip() {
+            p += 0.03; // Speed / 翻转速度
+
+            // Slerp / 插值旋转
+            card.quaternion.slerpQuaternions(startQ, targetQ, p);
+
+            if (p < 1) {
+                requestAnimationFrame(animateFlip);
+            } else {
+                // End: Force Rotation / 动画结束，强制修正角度
+                card.rotation.set(0, Math.PI, isReversed ? Math.PI : 0);
+
+                // Show Name / 显示卡牌名字
+                document.getElementById('status-text').innerText = name.toUpperCase();
+
+                // 7. ⏳ Wait 2s then Dissolve / 停留 2秒 让用户看清牌面，然后执行溶解
+                setTimeout(() => {
+                    dissolve(card, isReversed);
+                }, 2000);
+            }
+        }
+        animateFlip();
+    }
+
+    // --- Modified: Dissolve with Cooldown / 修改后：翻牌后带有冷却期 ---
+    function dissolve(card, isReversed) {
+        spawnParticles(card.position);
+        selectionCount++;
+        addToHistory(card.userData.rawData, isReversed);
+
+        // Hide Card / 隐藏卡片
+        card.visible = false;
+        card.userData.isChosen = true;
+        chosen3DMeshes.push(card);
+
+        // 🛑 Core Mod: Enter Cooldown / 核心修改：进入冷却期
+        isCoolingDown = true;
+
+        // Delayed Unlock / 延迟解锁
+        setTimeout(() => {
+            // Unlock Active Card / 只有冷却结束后，才释放 activeCard
+            activeCard = null;
+            isCoolingDown = false;
+
+            // Check if End / 检查是否结束
+            if (selectionCount >= MAX_SELECTION) {
+                startEndRitual();
+            } else {
+                // 🟢 [New] Show guides for next pick / [新增] 如果还没选完 3 张，必须恢复显示指引
+                if (typeof toggleGuides === 'function') {
+                    toggleGuides(true);
+                }
+            }
+        }, COOLDOWN_TIME);
+    }
+
+    function startEndRitual() {
+        isRitualComplete = true;
+        updateStatusText();
+
+        document.getElementById('history-container').style.opacity = 0;
+        document.getElementById('hud-center').style.opacity = 0;
+
+        setTimeout(() => {
+            // Show End UI / 显示底部UI
+            document.getElementById('end-ui').style.opacity = 1;
+            document.getElementById('end-ui').style.pointerEvents = 'auto';
+            document.getElementById('credits').style.opacity = 1;
+
+            // --- Logic Change: Show Reveal Button, Hide Restart / 逻辑变更：先显示查看指引按钮，隐藏重启按钮 ---
+            document.getElementById('view-reading-btn').style.display = 'block';
+            document.getElementById('restart-btn').style.display = 'none';
+
+            // Set Language / 设置按钮语言
+            const btnText = currentLang === 'zh' ? "揭示指引" : "REVEAL FATE";
+            document.getElementById('view-reading-btn').innerText = btnText;
+
+        }, 3500);
+
+        cardObjects.forEach(c => {
+            if (!c.userData.isChosen) {
+                c.userData.dropSpeed = 0.05 + Math.random() * 0.1;
+            }
+        });
+
+        chosen3DMeshes.forEach((card, index) => {
+            card.visible = true;
+            scene.attach(card);
+            // End Animation Start Pos / 结束动画起始位置
+            card.position.set(4 + index * 0.5, 3, -4);
+            card.scale.set(0.2, 0.2, 0.2);
+
+            // Responsive Final Pos / 响应式最终位置计算
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const gap = isPortrait ? 1.8 : 3.0;
+            const depth = isPortrait ? -7.0 : -6.0;
+            const targetY = isPortrait ? 3.0 : 0;
+
+            card.userData.finalTargetPos = new THREE.Vector3((index - 1) * gap, targetY, depth);
+            card.userData.finalTargetScale = 0.8;
+            card.userData.animProgress = 0;
+            card.userData.animDelay = index * 30;
+        });
+
+        const textContainer = document.getElementById('final-text-container');
+        const t = TEXTS[currentLang];
+
+        chosen3DMeshes.forEach(card => {
+            const div = document.createElement('div');
+            div.className = 'final-card-label';
+            const data = card.userData.rawData[currentLang];
+            const revText = card.userData.isReversed ? ` (${t.rev})` : "";
+            div.innerHTML = `<div class="final-name">${data.name}${revText}</div><div class="final-meaning">${data.meaning}</div>`;
+            textContainer.appendChild(div);
+        });
+        setTimeout(() => { textContainer.style.opacity = 1; }, 2000);
+    }
+
+    // --- Modified: Enter Starry Void (Async API) / 修改：进入星空解说模式 (支持异步 API) ---
+    async function enterStarryVoid() {
+        // 🔴 [Mod] Play second track / [修改] 播放第二首 (bgm2.mp3)
+        switchMusic('bgm-final');
+        // Hide buttons / 隐藏按钮和标签
+        document.getElementById('view-reading-btn').style.display = 'none';
+        document.getElementById('final-text-container').style.opacity = 0;
+
+        // Hide 3D Cards / 隐藏所有3D卡牌
+        chosen3DMeshes.forEach(mesh => { mesh.visible = false; });
+        cardObjects.forEach(mesh => { mesh.visible = false; });
+
+        const overlay = document.getElementById('oracle-overlay');
+
+        // Show Loading / 显示 Loading 动画
+        const loadingText = currentLang === 'zh' ? "正在与星辰连接..." : "Connecting with the stars...";
+        overlay.innerHTML = `<div style="opacity:0.7; animation: pulse 1.5s infinite;">${loadingText}</div>`;
+
+        // Callback after typing / 定义打字结束后的回调函数
+        const onTypingComplete = () => {
+            const restartBtn = document.getElementById('restart-btn');
+            restartBtn.style.display = 'block';
+            restartBtn.style.opacity = 0;
+            let op = 0;
+            const fadeTimer = setInterval(() => {
+                if (op >= 1) clearInterval(fadeTimer);
+                restartBtn.style.opacity = op;
+                op += 0.05;
+            }, 30);
+        };
+
+        // Try Calling API / 尝试调用 API
+        if (API_KEY && API_KEY.length > 5) {
+            try {
+                const apiText = await callTarotAPI(chosen3DMeshes);
+                typeWriter(apiText, overlay, onTypingComplete);
+            } catch (e) {
+                console.error("API Error:", e);
+
+                // 🔴 Debug: Alert on error / 调试模式：弹出错误警告
+                if (DEBUG_MODE) {
+                    // Prompt user / 提示用户安装插件
+                    alert(`API 调用失败: ${e.message}\n\n【解决方案】\nAPI 在浏览器直接调用时会被拦截 (CORS Error)。\n请确保代理 URL 有效。`);
+                }
+
+                // Fallback Text / 失败则降级到本地文案
+                const fallbackText = generateReadingText();
+                typeWriter(fallbackText, overlay, onTypingComplete);
+            }
+        } else {
+            // No Key -> Local Logic / 没有 Key，直接使用本地逻辑
+            setTimeout(() => {
+                const text = generateReadingText();
+                typeWriter(text, overlay, onTypingComplete);
+            }, 1500);
+        }
+    }
+
+    // --- New: Call LLM API (With Proxy) / 新增：调用 LLM API 获取解读 (包含 Proxy 逻辑) ---
+    async function callTarotAPI(cards) {
+        const cardDescriptions = cards.map((c, i) => {
+            const name = c.userData.rawData[currentLang].name;
+            const posName = currentLang === 'zh' ? ["过去", "现在", "未来"][i] : ["Past", "Present", "Future"][i];
+            const status = c.userData.isReversed
+                ? (currentLang === 'zh' ? "逆位 (Reversed)" : "Reversed")
+                : (currentLang === 'zh' ? "正位 (Upright)" : "Upright");
+            return `${posName}: ${name} [${status}]`;
+        }).join("\n");
+
+        const prompt = currentLang === 'zh'
+            ? `你是一位神秘的塔罗牌占卜师。求问者的问题是：“${userQuestionText}”。\n请根据以下牌阵为求问者解读：\n${cardDescriptions}\n\n要求：\n1. 用中文回答。\n2. 必须结合求问者的问题进行解答。\n3. 风格神秘、诗意。\n4. 将三张牌串联成一个完整的故事。\n5. 字数控制在150字以内。`
+            : `You are a mystical Tarot reader. The seeker asks: "${userQuestionText}".\nInterpret the following spread:\n${cardDescriptions}\n\nRequirements:\n1. Answer in English.\n2. Directly address the seeker's question.\n3. Tone: Mystical, poetic.\n4. Weave the cards into a coherent narrative.\n5. Keep it under 150 words.`;
+        // AbortController for Timeout / 增加 AbortController 用于超时控制
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s Timeout / 20秒超时
+
+        // --- ⚠️ Key Fix: Use Proxy Here / 关键修正：只有这里使用代理 ---
+        let url = API_ENDPOINT;
+        if (USE_PROXY_FOR_API) {
+            console.log("Applying proxy for CORS / 正在应用代理以解决跨域问题...");
+            // Append target API to proxy URL / 将目标 API 地址编码后拼接到代理地址后面
+            url = PROXY_BASE_URL + encodeURIComponent(API_ENDPOINT);
+        }
+        // -------------------------------------
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: API_MODEL,
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.7,
+                    max_tokens: 300
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errText}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        } catch (err) {
+            clearTimeout(timeoutId);
+            throw err;
+        }
+    }
+
+    // --- Fallback: Local Reading / 备选：生成本地解说文案 ---
+    function generateReadingText() {
+        const m1 = chosen3DMeshes[0].userData.rawData[currentLang].meaning;
+        const m2 = chosen3DMeshes[1].userData.rawData[currentLang].meaning;
+        const m3 = chosen3DMeshes[2].userData.rawData[currentLang].meaning;
+
+        if (currentLang === 'zh') {
+            return `命运的轨迹已在星辰中显现...<br><br>` +
+                `过去，你经历了 ${m1}。<br>` +
+                `此刻，正如 ${m2} 所昭示的，你需要专注于当下的力量。<br>` +
+                `而未来，${m3} 将会是你的指引。<br><br>` +
+                `相信直觉，拥抱变化。`;
+        } else {
+            return `The stars have aligned to reveal your path...<br><br>` +
+                `In the past, you walked through ${m1}.<br>` +
+                `Presently, as shown by ${m2}, focus on your inner power.<br>` +
+                `For the future, let ${m3} be your guiding light.<br><br>` +
+                `Trust your intuition. Embrace the change.`;
+        }
+    }
+
+    // --- Typewriter Effect / 打字机特效 ---
+    function typeWriter(htmlText, element, callback) {
+        element.innerHTML = "";
+        const plainText = htmlText.replace(/<br>/g, '\n');
+        let i = 0;
+        const speed = 50;
+
+        function type() {
+            if (i < plainText.length) {
+                const char = plainText.charAt(i);
+                element.innerHTML += (char === '\n') ? '<br>' : char;
+                i++;
+                setTimeout(type, speed);
+            } else {
+                if (callback) callback();
+            }
+        }
+        type();
+    }
+
+    function animateFinalFormation() {
+        cardObjects.forEach(c => {
+            if (!c.userData.isChosen && c.position.y > -10) {
+                c.position.y -= c.userData.dropSpeed;
+                c.rotation.x += 0.05;
+            }
+        });
+
+        chosen3DMeshes.forEach(card => {
+            if (card.userData.animDelay > 0) {
+                card.userData.animDelay--;
+                return;
+            }
+            if (card.userData.animProgress < 1) {
+                card.userData.animProgress += 0.015;
+                const t = card.userData.animProgress;
+                const easeT = t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                card.position.lerp(card.userData.finalTargetPos, 0.05);
+                const s = THREE.MathUtils.lerp(0.2, card.userData.finalTargetScale, easeT);
+                card.scale.set(s, s, s);
+                const isRev = card.userData.isReversed;
+                card.rotation.set(0, Math.PI, isRev ? Math.PI : 0);
+            }
+        });
+    }
+
+    function addToHistory(rawData, isRev) {
+        const con = document.getElementById('history-container');
+        const slot = document.createElement('div');
+        slot.className = `history-slot ${isRev ? 'is-reversed' : ''}`;
+        const t = TEXTS[currentLang];
+        const data = rawData[currentLang];
+        slot.innerHTML = `<img src="${rawData.url}"><div class="history-info"><div class="history-name">${data.name}</div><div class="history-rev">${t.rev}</div></div>`;
+        con.appendChild(slot);
+    }
+
+    const particles = [];
+
+    function spawnParticles(pos) {
+        const count = 500;
+        const geo = new THREE.BufferGeometry();
+        const pArr = new Float32Array(count * 3);
+        const vArr = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+            pArr[i * 3] = pos.x + (Math.random() - 0.5) * CARD_W;
+            pArr[i * 3 + 1] = pos.y + (Math.random() - 0.5) * CARD_H;
+            pArr[i * 3 + 2] = pos.z;
+            vArr[i * 3] = (Math.random() - 0.5) * 0.02;
+            vArr[i * 3 + 1] = Math.random() * 0.03;
+            vArr[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+        const mat = new THREE.PointsMaterial({ color: GOLD_COLOR, size: 0.04, transparent: true });
+        const sys = new THREE.Points(geo, mat);
+        sys.userData = { life: 1.0, vels: vArr };
+        scene.add(sys);
+        particles.push(sys);
+    }
+
+    function updateParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const sys = particles[i],
+                p = sys.geometry.attributes.position.array,
+                v = sys.userData.vels;
+            sys.userData.life -= 0.02;
+            for (let j = 0; j < p.length / 3; j++) {
+                p[j * 3] += v[j * 3];
+                p[j * 3 + 1] += v[j * 3 + 1];
+                p[j * 3 + 2] += v[j * 3 + 2];
+            }
+            sys.geometry.attributes.position.needsUpdate = true;
+            sys.material.opacity = sys.userData.life;
+            if (sys.userData.life <= 0) {
+                scene.remove(sys);
+                particles.splice(i, 1);
+            }
+        }
+    }
+
+    function initCamera() {
+        const videoElem = document.getElementById('video-feed');
+        // ⚠️ Mediapipe: Use CDN directly, do not proxy / ⚠️ Mediapipe 模型：直接使用 CDN，不走代理
+        const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5 });
+        hands.onResults(res => {
+            if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
+                const lm = res.multiHandLandmarks[0];
+                handX += ((1 - lm[8].x) * 2 - 1 - handX) * 0.2;
+                const pinch = Math.hypot(lm[8].x - lm[4].x, lm[8].y - lm[4].y);
+                const fist = lm[12].y > lm[9].y && lm[16].y > lm[13].y;
+                handState = fist ? 'FIST' : (pinch < 0.05 ? 'PINCH' : 'OPEN');
+                if (!isRitualComplete) {
+                    document.getElementById('gesture-icon').innerText = handState === 'FIST' ? '✊' : (handState === 'PINCH' ? '👌' : '✋');
+                }
+            }
+        });
+        const cam = new Camera(videoElem, { onFrame: async () => { await hands.send({ image: videoElem }) }, width: 320, height: 240 });
+        cam.start();
+    }
+
+    // Responsive Camera Update / 响应式相机位置更新
+    function updateCameraPos() {
+        const aspect = window.innerWidth / window.innerHeight;
+        camera.aspect = aspect;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Key: Move camera back on portrait mode to see ring / 关键：竖屏模式下相机后退，以便看到完整的牌阵环
+        if (aspect < 1) { // Portrait / 竖屏
+            camera.position.z = 1; // Further back / 距离更远
+            camera.position.y = 1;
+        } else { // Landscape / 横屏
+            camera.position.z = 0;
+            camera.position.y = 0;
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        starSystem.rotation.y += 0.0002;
+        if (isStarted) {
+            handleInput();
+            updateReturningCards();
+            updateParticles();
+            // 👉 New: Refresh Visuals / 新增：在这里调用视觉刷新
+            updateCardVisuals();
+        }
+        renderer.render(scene, camera);
+    }
+    animate();
+
+
+    // --- Modified: Spotlight Logic (Dominant Mode) / 修改后：视觉聚光灯逻辑 (霸道模式) ---
+    function updateCardVisuals() {
+        // Define Colors / 定义颜色
+        const colorActive = new THREE.Color(0xffffff); // Bright (Spotlight) / 亮 (聚光)
+        const colorDimmed = new THREE.Color(0x333333); // Dim (Background) / 暗 (背景压暗，突出主角)
+
+        // Emissive Strength / 发光强度
+        const emissiveActive = new THREE.Color(0x222222);
+        const emissiveDimmed = new THREE.Color(0x000000);
+
+        cardObjects.forEach(card => {
+            // 1. Skip Chosen Cards / 已经飞走/消失的卡，直接跳过
+            if (card.userData.isChosen) return;
+
+            let isTarget = false;
+
+            // --- Core Logic / 核心判断逻辑 ---
+            if (activeCard) {
+                // Scene A: Player Holding Card / 场景 A：玩家手里拿着卡
+                // Only held card is active / 只有手里这张是亮的目标
+                if (card === activeCard) {
+                    isTarget = true;
+                }
+            } else {
+                // Scene B: Browsing Mode / 场景 B：玩家没拿卡 (浏览模式)
+                // Axis card is active / 只有正对中轴的那张是亮的目标
+                if (card === centerCard) {
+                    isTarget = true;
+                }
+            }
+            // --------------------
+
+            const targetColor = isTarget ? colorActive : colorDimmed;
+            const targetEmissive = isTarget ? emissiveActive : emissiveDimmed;
+
+            // Apply Color Transition / 执行颜色渐变
+            card.children.forEach(mesh => {
+                if (mesh.isMesh && mesh.material) {
+                    // Color Lerp / 颜色过渡
+                    mesh.material.color.lerp(targetColor, 0.1);
+
+                    // Emissive Lerp (Holy Feel) / 自发光过渡 (增加神圣感)
+                    if (mesh.material.emissive) {
+                        mesh.material.emissive.lerp(targetEmissive, 0.1);
+                    }
+                }
+            });
+        });
+    }
+
+    window.onresize = updateCameraPos;
 </script>
 </body>
 </html>
