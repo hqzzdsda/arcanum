@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🕶️ Neo Tarot | 尼奥塔罗</h1>
+  <h1>🕶️ Neo Tarot | neo塔罗</h1>
   <h3>The Cyber Arcanum / 赛博奥秘</h3>
   <p>
     <strong>Visual Gesture Control × DeepSeek Brain × Pure HTML</strong>
