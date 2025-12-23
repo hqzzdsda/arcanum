@@ -20,6 +20,9 @@
   </div>
 
 ---
+<div align="center">
+  <img src="./Demo/Cover.png" width="100%">
+</div>
 
 ## 🔮 The Concept / 核心理念
 
@@ -52,6 +55,11 @@ This project is an "AI Chimera". I am just the prompt engineer.
 Forget the mouse. Use your hand to shuffle and draw cards in the air.
 忘了鼠标吧。对着摄像头挥手，隔空洗牌、抽牌。
 *(Powered by MediaPipe Computer Vision)*
+
+<div align="center">
+  <img src="./Demo/Gesture control.gif" width="100%">
+</div>
+
 
 ### 2. 🧠 DeepSeek Integration / 接入 DeepSeek
 We don't use hard-coded interpretations. Every reading is generated in real-time based on your specific question.
